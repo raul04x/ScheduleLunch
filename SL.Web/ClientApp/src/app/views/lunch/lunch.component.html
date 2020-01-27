@@ -1,0 +1,48 @@
+<div class="my-3 p-3 bg-white rounded shadow-sm">
+  <div class="form-group">
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <div class="input-group-text">
+          <i class="fas fa-user"></i>
+        </div>
+      </div>
+      <input type="text" class="form-control" placeholder="Eater name" maxlength="30" required="" autofocus=""
+        [(ngModel)]="myEaterName">
+    </div>
+  </div>
+  <small class="d-block text-right mt-3" *ngIf="myEaterName != ''">
+    <a href="#" (click)="setMyEaterName()">Set My Eater Name</a>
+  </small>
+</div>
+<div *ngIf="scheduler && configuration" class="my-3 p-3 bg-white rounded shadow-sm">
+  <h6 class="border-bottom border-gray pb-2 mb-0">Schedule [{{today | date:'EEEE, MMM dd, yyyy'}}]</h6>
+  <div class="media text-muted pt-3" *ngFor="let item of scheduler.groups">
+    <div class="mr-2 rounded">
+      <i class="far fa-clock"></i> {{item.id}}
+    </div>
+    <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+      <strong class="d-block text-gray-dark pb-2">People in this hour: {{item.eaters.length}} /
+        {{configuration.capacity}}</strong>
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="input-group mb-3">
+            <button class="btn btn-outline-secondary" type="button" id="btnAction" (click)="addEater(item)"
+              [disabled]="!(configuration.capacity > item.eaters.length)">
+              <i class="fas fa-user-plus"></i> Add me!
+            </button>
+          </div>
+        </div>
+        <div class="col-sm-8">
+          <ul class="list-group" *ngIf="item.eaters">
+            <li class="list-group-item list-group-item-action" *ngFor="let eater of item.eaters">
+              <i class="fas fa-user mr-2"></i> {{eater}}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <small class="d-block text-right mt-3">
+    <a href="#">All updates</a>
+  </small>
+</div>
