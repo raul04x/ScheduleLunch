@@ -10,10 +10,10 @@
         [(ngModel)]="myEaterName">
     </div>
   </div>
-  <small class="d-block text-right mt-3" *ngIf="myEaterName != ''">
-    <a href="#" (click)="setMyEaterName()">
+  <small class="d-block text-right mt-3">
+    <button class="btn btn-link btn-xs" (click)="setMyEaterName()" [disabled]="myEaterName === ''">
       <i class="fas fa-sync"></i> Set My Eater Name
-    </a>
+    </button>
   </small>
 </div>
 <div *ngIf="scheduler && configuration" class="my-3 p-3 bg-white rounded shadow-sm">
