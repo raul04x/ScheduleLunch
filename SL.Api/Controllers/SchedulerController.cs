@@ -180,10 +180,27 @@ namespace SL.Api.Controllers
         public ActionResult<Scheduler> ChangeEaterName([FromBody] Eater eather)
         {
             Scheduler scheduler = new Scheduler();
+            Int32 counter = 0;
 
             try
             {
                 scheduler = JsonFiles.Instance.GetObjectFile<Scheduler>(ScheduleFile);
+
+                for (int i = 0; i < scheduler.Groups.Count; i++)
+                {
+                    counter = scheduler.Groups[i].Eaters.Count;
+                    for (int j = 0; j < counter; j++)
+                    {
+                        if (scheduler.Groups[i].Eaters[j].Equals(eather.OldName))
+                        {
+                            scheduler.Groups[i].Eaters[j] = eather.NewName;
+                            j = scheduler.Groups[i].Eaters.Count;
+                            i = scheduler.Groups.Count;
+                        }
+                    }
+                }
+
+                JsonFiles.Instance.WriteFile<Scheduler>(ScheduleFile, scheduler);
             }
             catch (Exception ex)
             {

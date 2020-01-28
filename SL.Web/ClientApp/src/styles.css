@@ -1,1 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
+
+.btn-xs {
+    border-radius: .15rem;
+    font-size: 0.85rem;
+    padding: 0 .25rem;
+}

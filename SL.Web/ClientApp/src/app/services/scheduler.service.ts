@@ -6,6 +6,7 @@ import { ControlException } from '../tools/control-exception';
 import { ConfigurationFile } from '../entities/configuration-file';
 import { SchedulerFile } from '../entities/scheduler-file';
 import { Hours } from '../entities/hours';
+import { Eater } from '../entities/eater';
 
 @Injectable({
   providedIn: 'root'
@@ -68,11 +69,15 @@ export class SchedulerService {
     return this.post<SchedulerFile>('/SetSchedule', schedulerFile);
   }
 
-  AddEather(eater: Hours): Observable<SchedulerFile> {
+  addEather(eater: Hours): Observable<SchedulerFile> {
     return this.post<SchedulerFile>('/AddEather', eater);
   }
 
-  RemoveEather(eater: Hours): Observable<SchedulerFile> {
+  removeEather(eater: Hours): Observable<SchedulerFile> {
     return this.post<SchedulerFile>('/RemoveEather', eater);
+  }
+
+  changeEaterName(eater: Eater): Observable<SchedulerFile> {
+    return this.post<SchedulerFile>('/ChangeEaterName', eater);
   }
 }

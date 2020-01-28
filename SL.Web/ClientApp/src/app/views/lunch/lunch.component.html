@@ -11,7 +11,9 @@
     </div>
   </div>
   <small class="d-block text-right mt-3" *ngIf="myEaterName != ''">
-    <a href="#" (click)="setMyEaterName()">Set My Eater Name</a>
+    <a href="#" (click)="setMyEaterName()">
+      <i class="fas fa-sync"></i> Set My Eater Name
+    </a>
   </small>
 </div>
 <div *ngIf="scheduler && configuration" class="my-3 p-3 bg-white rounded shadow-sm">
@@ -21,8 +23,9 @@
       <i class="far fa-clock"></i> {{item.id}}
     </div>
     <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-      <strong class="d-block text-gray-dark pb-2">People in this hour: {{item.eaters.length}} /
-        {{configuration.capacity}}</strong>
+      <strong class="d-block text-gray-dark pb-2">
+        People in this hour: {{item.eaters.length}} / {{configuration.capacity}}
+      </strong>
       <div class="row">
         <div class="col-sm-4">
           <div class="input-group mb-3">
@@ -34,8 +37,15 @@
         </div>
         <div class="col-sm-8">
           <ul class="list-group" *ngIf="item.eaters">
-            <li class="list-group-item list-group-item-action" *ngFor="let eater of item.eaters">
+            <li class="list-group-item list-group-item-action"
+              [ngClass]="{'list-group-item-secondary': eater.toLowerCase() === this.myEaterName.toLowerCase()}"
+              *ngFor="let eater of item.eaters">
               <i class="fas fa-user mr-2"></i> {{eater}}
+              <div class="float-right" *ngIf="eater.toLowerCase() === this.myEaterName.toLowerCase()">
+                <button type="button" class="btn btn-danger btn-xs" (click)="removeMe()">
+                  <i class="fas fa-minus"></i>
+                </button>
+              </div>
             </li>
           </ul>
         </div>
