@@ -23,13 +23,13 @@
       <i class="far fa-clock"></i> {{item.id}}
     </div>
     <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-      <strong class="d-block text-gray-dark pb-2">
-        People in this hour: {{item.eaters.length}} / {{configuration.capacity}}
-      </strong>
       <div class="row">
         <div class="col-sm-4">
+          <strong class="d-block text-gray-dark pb-2">
+            People in this hour: {{item.eaters.length}} / {{configuration.capacity}}
+          </strong>
           <div class="input-group mb-3">
-            <button class="btn btn-outline-secondary" type="button" id="btnAction" (click)="addEater(item)"
+            <button class="btn btn-outline-secondary btn-sm" type="button" id="btnAction" (click)="addEater(item)"
               [disabled]="!(configuration.capacity > item.eaters.length)">
               <i class="fas fa-user-plus"></i> Add me!
             </button>
@@ -53,6 +53,8 @@
     </div>
   </div>
   <small class="d-block text-right mt-3">
-    <a href="#">All updates</a>
+    <button class="btn btn-link btn-xs" (click)="updatePage()">
+      <i class="fas fa-sync"></i> Update page
+    </button>
   </small>
 </div>

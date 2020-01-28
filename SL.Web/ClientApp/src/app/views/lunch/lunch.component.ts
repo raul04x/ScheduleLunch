@@ -108,4 +108,8 @@ export class LunchComponent implements OnInit {
 
     this.schedulerSvc.removeEather(hours).subscribe(s => this.scheduler = s);
   }
+
+  updatePage() {
+    this.schedulerSvc.getSchedule().subscribe(s => this.setScheduler(s));
+  }
 }
