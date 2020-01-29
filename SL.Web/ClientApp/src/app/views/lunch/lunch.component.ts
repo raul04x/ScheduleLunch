@@ -94,7 +94,7 @@ export class LunchComponent implements OnInit {
       if (this.currentEaterName === '') {
         this.currentEaterName = String(this.myEaterName);
         localStorage.setItem('currentEaterName', this.currentEaterName);
-        this.toastSvc.warning('Your name has been set!!!', this.currentEaterName);
+        this.toastSvc.success('Your name has been set!!!', this.currentEaterName);
       }
       else {
         const eater = new Eater();
@@ -104,7 +104,7 @@ export class LunchComponent implements OnInit {
           this.scheduler = s;
           this.currentEaterName = String(this.myEaterName);
           localStorage.setItem('currentEaterName', this.currentEaterName);
-          this.toastSvc.warning('Your name has been set!!!', this.currentEaterName);
+          this.toastSvc.success('Your name has been set!!!', this.currentEaterName);
         });
       }
     }
