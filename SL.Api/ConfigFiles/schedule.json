@@ -1,5 +1,5 @@
 {
-  "id": "20200123",
+  "id": "20200129",
   "groups": [
     {
       "id": "1200",
@@ -26,5 +26,5 @@
       "eaters": []
     }
   ],
-  "errorMessage": null
+  "errorMessage": ""
 }

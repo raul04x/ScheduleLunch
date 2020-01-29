@@ -10,5 +10,11 @@ namespace SL.Api.Models
 
         [JsonProperty(PropertyName = "newName")]
         public String NewName { get; set; }
+
+        [JsonProperty(PropertyName = "hour")]
+        public String Hour { get; set; }
+
+        [JsonProperty(PropertyName = "isOut")]
+        public Boolean IsOut { get; set; }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using SL.Api.Helpers;
+using SL.Api.Interfaces;
 using SL.Api.Models;
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,13 @@ namespace SL.Api.Controllers
     {
         private static String ConfigFile => String.Format("{0}\\ConfigFiles\\config.json", Environment.CurrentDirectory);
         private static String ScheduleFile => String.Format("{0}\\ConfigFiles\\schedule.json", Environment.CurrentDirectory);
+
+        private IHubContext<NotifyHub, ILunchHubClient> HubContext { get; set; }
+
+        public SchedulerController(IHubContext<NotifyHub, ILunchHubClient> hubContext)
+        {
+            HubContext = hubContext;
+        }
 
         // GET scheduler
         [HttpGet]
@@ -112,7 +121,7 @@ namespace SL.Api.Controllers
 
         // Post scheduler/AddEather
         [HttpPost("[action]")]
-        public ActionResult<Scheduler> AddEather([FromBody] Hours eather)
+        public ActionResult<Scheduler> AddEather([FromBody] Hours eater)
         {
             Scheduler scheduler = new Scheduler();
 
@@ -122,21 +131,29 @@ namespace SL.Api.Controllers
                 Hours currentHour;
 
                 scheduler = JsonFiles.Instance.GetObjectFile<Scheduler>(ScheduleFile);
-                currentHour = scheduler.Groups.FirstOrDefault(ch => ch.Id == eather.Id);
+                currentHour = scheduler.Groups.FirstOrDefault(ch => ch.Id == eater.Id);
                 scheduler.ErrorMessage = String.Empty;
 
-                if (eather.Eaters.Count > 0 && currentHour != null)
+                if (eater.Eaters.Count > 0 && currentHour != null)
                 {
                     if (currentHour.Eaters.Count < config.Capacity)
                     {
-                        currentHour.Eaters.Add(eather.Eaters[0]);
+                        currentHour.Eaters.Add(eater.Eaters[0]);
                     }
                     else
                     {
-                        scheduler.ErrorMessage = String.Format("This hour ({0}) is full!", eather.Id);
+                        scheduler.ErrorMessage = String.Format("This hour ({0}) is full!", eater.Id);
                     }
 
                     JsonFiles.Instance.WriteFile<Scheduler>(ScheduleFile, scheduler);
+
+                    Eater eaterNot = new Eater
+                    {
+                        Hour = eater.Id,
+                        IsOut = false,
+                        NewName = eater.Eaters[0]
+                    };
+                    HubContext.Clients.All.BroadcastMessage(eaterNot, scheduler);
                 }
             }
             catch (Exception ex)
@@ -149,7 +166,7 @@ namespace SL.Api.Controllers
 
         // Post scheduler/RemoveEather
         [HttpPost("[action]")]
-        public ActionResult<Scheduler> RemoveEather([FromBody] Hours eather)
+        public ActionResult<Scheduler> RemoveEather([FromBody] Hours eater)
         {
             Scheduler scheduler = new Scheduler();
 
@@ -158,13 +175,21 @@ namespace SL.Api.Controllers
                 Hours currentHour;
 
                 scheduler = JsonFiles.Instance.GetObjectFile<Scheduler>(ScheduleFile);
-                currentHour = scheduler.Groups.FirstOrDefault(ch => ch.Id == eather.Id);
+                currentHour = scheduler.Groups.FirstOrDefault(ch => ch.Id == eater.Id);
                 scheduler.ErrorMessage = String.Empty;
 
-                if (eather.Eaters.Count > 0 && currentHour != null)
+                if (eater.Eaters.Count > 0 && currentHour != null)
                 {
-                    currentHour.Eaters.Remove(eather.Eaters[0]);
+                    currentHour.Eaters.Remove(eater.Eaters[0]);
                     JsonFiles.Instance.WriteFile<Scheduler>(ScheduleFile, scheduler);
+
+                    Eater eaterNot = new Eater
+                    {
+                        Hour = eater.Id,
+                        IsOut = true,
+                        NewName = eater.Eaters[0]
+                    };
+                    HubContext.Clients.All.BroadcastMessage(eaterNot, scheduler);
                 }
             }
             catch (Exception ex)
@@ -201,6 +226,14 @@ namespace SL.Api.Controllers
                 }
 
                 JsonFiles.Instance.WriteFile<Scheduler>(ScheduleFile, scheduler);
+
+                Eater eaterNot = new Eater
+                {
+                    Hour = String.Empty,
+                    IsOut = false,
+                    NewName = "-none-"
+                };
+                HubContext.Clients.All.BroadcastMessage(eaterNot, scheduler);
             }
             catch (Exception ex)
             {

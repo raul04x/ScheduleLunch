@@ -23,6 +23,7 @@ export class SchedulerService {
 
   constructor(private http: HttpClient, private log: ControlException) {
     this.schedulerURL = 'https://slapi.azurewebsites.net/scheduler';
+    //this.schedulerURL = 'https://localhost:44337/scheduler';
   }
 
   /**

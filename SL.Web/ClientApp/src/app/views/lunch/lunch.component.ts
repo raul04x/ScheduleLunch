@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { ToastrService } from 'ngx-toastr';
 import { SchedulerService } from 'src/app/services/scheduler.service';
 import { SchedulerFile } from 'src/app/entities/scheduler-file';
 import { ConfigurationFile } from 'src/app/entities/configuration-file';
 import { Hours } from 'src/app/entities/hours';
 import { Eater } from 'src/app/entities/eater';
+
+import * as signalR from '@aspnet/signalr';
 
 @Component({
   selector: 'app-lunch',
@@ -18,10 +21,13 @@ export class LunchComponent implements OnInit {
   myEaterName = '';
   currentEaterName = '';
   isEaterAdded = false;
+  urlNotify = 'https://slapi.azurewebsites.net/scheduler/notify';
+  //urlNotify = 'https://localhost:44337/scheduler/notify';
 
-  constructor(private schedulerSvc: SchedulerService) { }
+  constructor(private schedulerSvc: SchedulerService, private toastSvc: ToastrService) { }
 
   ngOnInit() {
+    this.setListenerFromServer();
     this.schedulerSvc.getConfigFile().subscribe(c => this.configuration = c);
     this.schedulerSvc.getSchedule().subscribe(s => this.setScheduler(s));
     this.myEaterName = localStorage.getItem('currentEaterName');
@@ -34,6 +40,29 @@ export class LunchComponent implements OnInit {
     }
   }
 
+  setListenerFromServer() {
+    const connection = new signalR.HubConnectionBuilder()
+      .configureLogging(signalR.LogLevel.Information)
+      .withUrl(this.urlNotify)
+      .build();
+
+    connection.start().then(() => {
+      console.log('Connected');
+    }).catch((err) => {
+      return console.error(err.toString());
+    });
+
+    connection.on('BroadcastMessage', (eater: Eater, scheduler: SchedulerFile) => {
+      this.scheduler = scheduler;
+      if (eater.isOut && eater.newName !== '-none-') {
+        this.toastSvc.info(`${eater.newName} has released a turn in the hour ${eater.hour}`, 'News!!!');
+      }
+      else if (eater.newName !== '-none-') {
+        this.toastSvc.info(`${eater.newName} took the hour ${eater.hour}`, 'News!!!');
+      }
+    });
+  }
+
   setScheduler(scheduler: SchedulerFile) {
     this.schedulerSvc.setSchedule(scheduler).subscribe(s => this.scheduler = s);
   }
@@ -41,7 +70,7 @@ export class LunchComponent implements OnInit {
   addEater(group: Hours) {
     if (this.myEaterName && group.eaters.length < this.configuration.capacity) {
       if (this.isEaterNameRepeted(this.myEaterName)) {
-        alert(`Dear ${this.myEaterName}, you have already schedule your hour for lunch!!!`);
+        this.toastSvc.success('You have already schedule your hour for lunch!!!', `Dear ${this.myEaterName}`);
       }
       else {
         const objEater = new Hours();
@@ -49,22 +78,23 @@ export class LunchComponent implements OnInit {
         objEater.eaters = [];
         objEater.eaters.push(this.myEaterName);
         this.schedulerSvc.addEather(objEater).subscribe(s => this.scheduler = s);
+        this.toastSvc.success('You got a turn in the dinner!!!', `Dear ${this.myEaterName}`);
       }
     }
     else {
-      alert('Eater name is required!!!');
+      this.toastSvc.warning('Eater name is required!!!', '');
     }
   }
 
   setMyEaterName() {
     if (this.isEaterNameRepeted(this.myEaterName)) {
-      alert(`${this.myEaterName} is taken!!!`);
+      this.toastSvc.warning(`${this.myEaterName} is taken!!!`, '');
     }
     else {
       if (this.currentEaterName === '') {
         this.currentEaterName = String(this.myEaterName);
         localStorage.setItem('currentEaterName', this.currentEaterName);
-        alert('Your name has been set!!!');
+        this.toastSvc.warning('Your name has been set!!!', this.currentEaterName);
       }
       else {
         const eater = new Eater();
@@ -74,7 +104,7 @@ export class LunchComponent implements OnInit {
           this.scheduler = s;
           this.currentEaterName = String(this.myEaterName);
           localStorage.setItem('currentEaterName', this.currentEaterName);
-          alert('Your name has been set!!!');
+          this.toastSvc.warning('Your name has been set!!!', this.currentEaterName);
         });
       }
     }
@@ -106,7 +136,10 @@ export class LunchComponent implements OnInit {
       }
     });
 
-    this.schedulerSvc.removeEather(hours).subscribe(s => this.scheduler = s);
+    this.schedulerSvc.removeEather(hours).subscribe(s => {
+      this.scheduler = s;
+      this.toastSvc.success('You have been removed of the list to get lunch!!!', `Dear ${this.myEaterName}`);
+    });
   }
 
   updatePage() {
