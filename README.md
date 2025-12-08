@@ -4,7 +4,8 @@
 
 ### Prerequisites
 
-- .NET Core 3.1+
+- .NET Core 3.1+ (Legacy)
+- .NET 10
 - Visual Studio or VS Code
 
 ### Setup
