@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using SL.Application.Users;
+using SL.Application.Auth;
 using SL.Infrastructure.Data;
 
 // 1️⃣ Bootstrap Serilog before Builder

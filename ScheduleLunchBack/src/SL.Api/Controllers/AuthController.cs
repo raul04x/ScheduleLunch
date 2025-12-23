@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SL.Application.Users;
+using SL.Application.Auth;
+using SL.Application.DTOs;
 using SL.Domain.Entities;
 using SL.Infrastructure.Data;
 

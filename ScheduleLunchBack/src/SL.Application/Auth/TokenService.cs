@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SL.Domain.Entities;
 
-namespace SL.Application.Users;
+namespace SL.Application.Auth;
 
 public class TokenService
 {
