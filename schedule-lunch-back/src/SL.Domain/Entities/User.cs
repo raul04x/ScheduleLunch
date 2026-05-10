@@ -26,4 +26,6 @@ public class User : IAuditable
 
     [Column("role")]
     public UserRole Role { get; set; } = UserRole.User;
+
+    public ICollection<GroupMembership> Memberships { get; set; } = new List<GroupMembership>();
 }
