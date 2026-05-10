@@ -35,9 +35,25 @@ public class SetupController(ScheduleDbContext db) : ControllerBase
             Role = UserRole.SuperAdmin
         };
 
+        var group = new Group
+        {
+            Name = dto.GroupName,
+            Description = dto.GroupDescription
+        };
+
+        var membership = new GroupMembership
+        {
+            UserId = user.Id,
+            GroupId = group.Id,
+            Status = MembershipStatus.Approved,
+            Role = MembershipRole.Admin
+        };
+
         db.Users.Add(user);
+        db.Groups.Add(group);
+        db.GroupMemberships.Add(membership);
         await db.SaveChangesAsync();
 
-        return Ok(new { message = "SuperAdmin created successfully." });
+        return Ok(new { message = "Setup completed successfully." });
     }
 }

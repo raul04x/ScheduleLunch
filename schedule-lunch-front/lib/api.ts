@@ -69,6 +69,8 @@ export const api = {
       password: string;
       firstName: string;
       lastName: string;
+      groupName: string;
+      groupDescription?: string;
     }): Promise<{ message: string }> =>
       request<{ message: string }>('/api/setup/init', { method: 'POST', body: JSON.stringify(data) }),
   },
