@@ -6,18 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SL.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddGroupsAndScheduling : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "role",
-                schema: "schedule",
-                table: "t_users",
-                type: "text",
-                nullable: false,
-                defaultValue: "User");
+            migrationBuilder.EnsureSchema(
+                name: "schedule");
 
             migrationBuilder.CreateTable(
                 name: "t_groups",
@@ -33,6 +28,68 @@ namespace SL.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_t_groups", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "t_settings",
+                schema: "schedule",
+                columns: table => new
+                {
+                    keyname = table.Column<string>(name: "key-name", type: "character varying(20)", maxLength: 20, nullable: false),
+                    config = table.Column<string>(type: "jsonb", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_t_settings", x => x.keyname);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "t_users",
+                schema: "schedule",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    first_name = table.Column<string>(type: "text", nullable: false),
+                    last_name = table.Column<string>(type: "text", nullable: false),
+                    email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    password_hash = table.Column<string>(type: "text", nullable: false),
+                    role = table.Column<string>(type: "text", nullable: false, defaultValue: "User"),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_t_users", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "t_time_slots",
+                schema: "schedule",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    GroupId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    Label = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    StartTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
+                    EndTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
+                    Capacity = table.Column<int>(type: "integer", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_t_time_slots", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_t_time_slots_t_groups_GroupId",
+                        column: x => x.GroupId,
+                        principalSchema: "schedule",
+                        principalTable: "t_groups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -62,33 +119,6 @@ namespace SL.Infrastructure.Migrations
                         principalSchema: "schedule",
                         principalTable: "t_users",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "t_time_slots",
-                schema: "schedule",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    GroupId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Date = table.Column<DateOnly>(type: "date", nullable: false),
-                    Label = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    StartTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
-                    EndTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
-                    Capacity = table.Column<int>(type: "integer", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_t_time_slots", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_t_time_slots_t_groups_GroupId",
-                        column: x => x.GroupId,
-                        principalSchema: "schedule",
-                        principalTable: "t_groups",
-                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -141,10 +171,31 @@ namespace SL.Infrastructure.Migrations
                 column: "GroupId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_t_settings_key-name",
+                schema: "schedule",
+                table: "t_settings",
+                column: "key-name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_t_time_slots_GroupId",
                 schema: "schedule",
                 table: "t_time_slots",
                 column: "GroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_t_users_email",
+                schema: "schedule",
+                table: "t_users",
+                column: "email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_t_users_username",
+                schema: "schedule",
+                table: "t_users",
+                column: "username",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -159,17 +210,20 @@ namespace SL.Infrastructure.Migrations
                 schema: "schedule");
 
             migrationBuilder.DropTable(
+                name: "t_settings",
+                schema: "schedule");
+
+            migrationBuilder.DropTable(
                 name: "t_time_slots",
+                schema: "schedule");
+
+            migrationBuilder.DropTable(
+                name: "t_users",
                 schema: "schedule");
 
             migrationBuilder.DropTable(
                 name: "t_groups",
                 schema: "schedule");
-
-            migrationBuilder.DropColumn(
-                name: "role",
-                schema: "schedule",
-                table: "t_users");
         }
     }
 }

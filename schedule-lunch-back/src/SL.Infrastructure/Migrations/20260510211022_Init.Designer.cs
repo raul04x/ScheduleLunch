@@ -12,8 +12,8 @@ using SL.Infrastructure.Data;
 namespace SL.Infrastructure.Migrations
 {
     [DbContext(typeof(ScheduleDbContext))]
-    [Migration("20260510202108_AddGroupsAndScheduling")]
-    partial class AddGroupsAndScheduling
+    [Migration("20260510211022_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
