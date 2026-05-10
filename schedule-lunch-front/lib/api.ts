@@ -60,4 +60,16 @@ export const api = {
     updateRole: (userId: string, role: import('./types').UserRole, token: string) =>
       request<void>(`/api/admin/users/${userId}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }, token),
   },
+  setup: {
+    status: (): Promise<{ setupRequired: boolean }> =>
+      request<{ setupRequired: boolean }>('/api/setup/status'),
+    init: (data: {
+      username: string;
+      email: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+    }): Promise<{ message: string }> =>
+      request<{ message: string }>('/api/setup/init', { method: 'POST', body: JSON.stringify(data) }),
+  },
 };

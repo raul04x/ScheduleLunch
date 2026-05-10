@@ -6,6 +6,11 @@ export function middleware(req: NextRequest) {
   const token = req.cookies.get('sl_token')?.value ?? '';
   const { pathname } = req.nextUrl;
 
+  if (pathname.startsWith('/setup')) {
+    if (token) return NextResponse.redirect(new URL('/login', req.url));
+    return NextResponse.next();
+  }
+
   if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) {
     if (token) return NextResponse.redirect(new URL('/schedule', req.url));
     return NextResponse.next();
