@@ -15,21 +15,24 @@ public class ScheduleController(IScheduleService scheduleService, IHubContext<Ac
 {
     private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     private string CurrentUsername => User.FindFirstValue(ClaimTypes.Name)!;
-    private Guid CurrentGroupId => Guid.Parse(User.FindFirst("groupId")!.Value);
+    private Guid? CurrentGroupId => Guid.TryParse(User.FindFirst("groupId")?.Value, out var id) ? id : null;
 
     [HttpGet("week")]
     public async Task<IActionResult> GetWeek() =>
-        Ok(await scheduleService.GetWeekSlotsAsync(CurrentGroupId, CurrentUserId));
+        CurrentGroupId is not { } gid ? Forbid() :
+        Ok(await scheduleService.GetWeekSlotsAsync(gid, CurrentUserId));
 
     [HttpGet("day")]
     public async Task<IActionResult> GetDay([FromQuery] DateOnly date) =>
-        Ok(await scheduleService.GetDaySlotsAsync(CurrentGroupId, date, CurrentUserId));
+        CurrentGroupId is not { } gid ? Forbid() :
+        Ok(await scheduleService.GetDaySlotsAsync(gid, date, CurrentUserId));
 
     [HttpPost("{slotId}/reserve")]
     public async Task<IActionResult> Reserve(Guid slotId)
     {
+        if (CurrentGroupId is not { } gid) return Forbid();
         var slot = await scheduleService.ReserveSlotAsync(slotId, CurrentUserId);
-        await hub.Clients.Group($"group-{CurrentGroupId}")
+        await hub.Clients.Group($"group-{gid}")
             .SendAsync("UserReserved", new ActivityEventDto(
                 CurrentUsername, slot.Label, slot.Date.ToString("yyyy-MM-dd"),
                 slot.AttendeeCount, slot.Capacity));
@@ -39,8 +42,9 @@ public class ScheduleController(IScheduleService scheduleService, IHubContext<Ac
     [HttpDelete("{slotId}/reserve")]
     public async Task<IActionResult> Cancel(Guid slotId)
     {
+        if (CurrentGroupId is not { } gid) return Forbid();
         var slot = await scheduleService.CancelReservationAsync(slotId, CurrentUserId);
-        await hub.Clients.Group($"group-{CurrentGroupId}")
+        await hub.Clients.Group($"group-{gid}")
             .SendAsync("UserCancelled", new ActivityEventDto(
                 CurrentUsername, slot.Label, slot.Date.ToString("yyyy-MM-dd"),
                 slot.AttendeeCount, slot.Capacity));
@@ -51,8 +55,9 @@ public class ScheduleController(IScheduleService scheduleService, IHubContext<Ac
     [Authorize(Roles = "GroupAdmin,SuperAdmin")]
     public async Task<IActionResult> CreateSlot(CreateTimeSlotDto dto)
     {
-        var slot = await scheduleService.CreateSlotAsync(CurrentGroupId, dto);
-        await hub.Clients.Group($"group-{CurrentGroupId}")
+        if (CurrentGroupId is not { } gid) return Forbid();
+        var slot = await scheduleService.CreateSlotAsync(gid, dto);
+        await hub.Clients.Group($"group-{gid}")
             .SendAsync("SlotCreated", new ActivityEventDto(
                 CurrentUsername, slot.Label, slot.Date.ToString("yyyy-MM-dd"),
                 0, slot.Capacity));
@@ -63,11 +68,12 @@ public class ScheduleController(IScheduleService scheduleService, IHubContext<Ac
     [Authorize(Roles = "GroupAdmin,SuperAdmin")]
     public async Task<IActionResult> DeleteSlot(Guid slotId)
     {
-        var slots = await scheduleService.GetDaySlotsAsync(CurrentGroupId, DateOnly.FromDateTime(DateTime.UtcNow), CurrentUserId);
+        if (CurrentGroupId is not { } gid) return Forbid();
+        var slots = await scheduleService.GetDaySlotsAsync(gid, DateOnly.FromDateTime(DateTime.UtcNow), CurrentUserId);
         var slot = slots.FirstOrDefault(s => s.Id == slotId);
         await scheduleService.DeleteSlotAsync(slotId);
         if (slot is not null)
-            await hub.Clients.Group($"group-{CurrentGroupId}")
+            await hub.Clients.Group($"group-{gid}")
                 .SendAsync("SlotDeleted", new ActivityEventDto(
                     CurrentUsername, slot.Label, slot.Date.ToString("yyyy-MM-dd"), 0, slot.Capacity));
         return NoContent();
