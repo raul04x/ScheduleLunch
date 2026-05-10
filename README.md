@@ -1,42 +1,42 @@
 # ScheduleLunch
 
-Aplicación de reservas de almuerzo con autenticación, grupos multi-tenant, programación semanal y actividad en tiempo real.
+Lunch reservation app with authentication, multi-tenant groups, weekly scheduling, and real-time activity feed.
 
 ## Stack
 
 - **Backend:** .NET 10, ASP.NET Core, PostgreSQL, EF Core, SignalR, JWT
 - **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS 4, @microsoft/signalr
 
-## Estructura del proyecto
+## Project Structure
 
 ```
 ScheduleLunch/
-├── schedule-lunch-back/   # API .NET 10 (Clean Architecture)
+├── schedule-lunch-back/   # .NET 10 API (Clean Architecture)
 │   └── src/
-│       ├── SL.Domain/         # Entidades, enums, interfaces de repositorios
-│       ├── SL.Application/    # Servicios, DTOs, TokenService
-│       ├── SL.Infrastructure/ # EF Core, repositorios, migraciones, ActivityHub
-│       └── SL.Api/            # Controladores, Program.cs, Swagger
-└── schedule-lunch-front/  # Frontend Next.js 16
+│       ├── SL.Domain/         # Entities, enums, repository interfaces
+│       ├── SL.Application/    # Services, DTOs, TokenService
+│       ├── SL.Infrastructure/ # EF Core, repositories, migrations, ActivityHub
+│       └── SL.Api/            # Controllers, Program.cs, Swagger
+└── schedule-lunch-front/  # Next.js 16 frontend
     ├── app/
-    │   ├── setup/         # Configuración inicial (primer SuperAdmin)
-    │   ├── (auth)/        # Login, Registro
-    │   ├── (user)/        # Horario semanal, página de espera
-    │   └── admin/         # Gestión de usuarios, grupos y slots
-    └── lib/               # API client, auth helpers, SignalR, tipos
+    │   ├── setup/         # First-time setup (first SuperAdmin)
+    │   ├── (auth)/        # Login, Register
+    │   ├── (user)/        # Weekly schedule, pending page
+    │   └── admin/         # User, group, and slot management
+    └── lib/               # API client, auth helpers, SignalR, types
 ```
 
-## Requisitos
+## Requirements
 
 - .NET 10 SDK
 - Node.js 20+
 - PostgreSQL 15+
 
-## Configuración
+## Setup
 
 ### Backend
 
-1. Ajustar la cadena de conexión y la clave JWT en `schedule-lunch-back/src/SL.Api/appsettings.json`:
+1. Set the connection string and JWT key in `schedule-lunch-back/src/SL.Api/appsettings.json`:
 
 ```json
 {
@@ -44,36 +44,29 @@ ScheduleLunch/
     "PostgreSQL": "Host=localhost;Port=5432;Database=schedule_lunch_db;Username=postgres;Password=..."
   },
   "Jwt": {
-    "Key": "tu-clave-secreta-aqui"
+    "Key": "your-secret-key-here"
   }
 }
 ```
 
-2. Aplicar la migración de base de datos:
-
-```bash
-cd schedule-lunch-back/src/SL.Infrastructure
-dotnet ef database update --startup-project ../SL.Api
-```
-
-3. Ejecutar la API:
+2. Run the API (database is created and migrations applied automatically on startup):
 
 ```bash
 cd schedule-lunch-back
 dotnet run --project src/SL.Api
-# http://localhost:5133 — Swagger en /swagger
+# http://localhost:5133 — Swagger at /swagger
 ```
 
 ### Frontend
 
-1. Crear `schedule-lunch-front/.env.local`:
+1. Create `schedule-lunch-front/.env.local`:
 
 ```
 NEXT_PUBLIC_API_URL=http://localhost:5133
-JWT_SECRET=<misma clave que Jwt:Key del backend>
+JWT_SECRET=<same value as Jwt:Key in the backend>
 ```
 
-2. Instalar dependencias y ejecutar:
+2. Install dependencies and run:
 
 ```bash
 cd schedule-lunch-front
@@ -82,55 +75,55 @@ npm run dev
 # http://localhost:3000
 ```
 
-## Comandos útiles
+## Useful Commands
 
 ```bash
-# Backend — desde schedule-lunch-back/
-dotnet build                    # Compilar
-dotnet test tests/SL.Tests/     # Ejecutar tests
-dotnet run --project src/SL.Api # Iniciar API
+# Backend — from schedule-lunch-back/
+dotnet build                    # Build
+dotnet test tests/SL.Tests/     # Run tests
+dotnet run --project src/SL.Api # Start API
 
-# Nueva migración
+# New migration
 cd src/SL.Infrastructure
-dotnet ef migrations add <Nombre> --startup-project ../SL.Api
+dotnet ef migrations add <Name> --startup-project ../SL.Api
 dotnet ef database update --startup-project ../SL.Api
 ```
 
 ## API
 
-| Controlador | Ruta base | Descripción |
+| Controller | Base route | Description |
 |---|---|---|
-| Setup | `/api/setup` | Configuración inicial — estado y creación del primer SuperAdmin |
-| Auth | `/api/auth` | Registro, login, perfil (`/me`) |
-| Groups | `/api/groups` | Grupos del usuario, solicitar unirse, aprobar miembros |
-| Schedule | `/api/schedule` | Slots semanales, reservas, gestión de slots |
-| Admin | `/api/admin` | Gestión de usuarios y grupos (SuperAdmin) |
-| ActivityHub | `/hubs/activity` | SignalR — eventos en tiempo real por grupo |
+| Setup | `/api/setup` | First-time setup — status and SuperAdmin creation |
+| Auth | `/api/auth` | Register, login, profile (`/me`) |
+| Groups | `/api/groups` | User groups, join requests, member approval |
+| Schedule | `/api/schedule` | Weekly slots, reservations, slot management |
+| Admin | `/api/admin` | User and group management (SuperAdmin) |
+| ActivityHub | `/hubs/activity` | SignalR — real-time events per group |
 
 ## Roles
 
-| Rol | Permisos |
+| Role | Permissions |
 |---|---|
-| `User` | Ver horario, reservar/cancelar slots |
-| `GroupAdmin` | Todo de User + crear/eliminar slots, aprobar miembros |
-| `SuperAdmin` | Todo + gestión global de usuarios y grupos |
+| `User` | View schedule, reserve/cancel slots |
+| `GroupAdmin` | Everything in User + create/delete slots, approve members |
+| `SuperAdmin` | Everything + global user and group management |
 
-## Primera ejecución
+## First Run
 
-La base de datos arranca vacía — sin usuarios. Al abrir la app por primera vez:
+The database starts empty — no users. When opening the app for the first time:
 
-1. El frontend detecta que no hay ningún `SuperAdmin` (`GET /api/setup/status`)
-2. Redirige automáticamente a `/setup`
-3. Se llena el formulario con los datos del administrador
-4. Se crea el `SuperAdmin` y redirige a `/login`
+1. The frontend checks if any `SuperAdmin` exists (`GET /api/setup/status`)
+2. Automatically redirects to `/setup`
+3. Fill in the administrator details
+4. The `SuperAdmin` is created and redirected to `/login`
 
-Una vez completado el setup, `/setup` queda bloqueada para todos.
+Once setup is complete, `/setup` is locked for everyone.
 
-## Flujo de usuario
+## User Flow
 
-1. `SuperAdmin` crea grupos desde `/admin/groups`
-2. Usuario se registra → estado `Pending`
-3. `GroupAdmin` aprueba desde `/admin/users` → estado `Approved`
-4. Usuario inicia sesión → JWT con `role` y `groupId`
-5. Reserva slots en la vista semanal
-6. Cambios se reflejan en tiempo real vía SignalR para todos los miembros del grupo
+1. `SuperAdmin` creates groups from `/admin/groups`
+2. User registers → status `Pending`
+3. `GroupAdmin` approves from `/admin/users` → status `Approved`
+4. User logs in → JWT with `role` and `groupId`
+5. Reserves slots in the weekly schedule view
+6. Changes are reflected in real time via SignalR for all group members
