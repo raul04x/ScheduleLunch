@@ -19,6 +19,7 @@ ScheduleLunch/
 │       └── SL.Api/            # Controladores, Program.cs, Swagger
 └── schedule-lunch-front/  # Frontend Next.js 16
     ├── app/
+    │   ├── setup/         # Configuración inicial (primer SuperAdmin)
     │   ├── (auth)/        # Login, Registro
     │   ├── (user)/        # Horario semanal, página de espera
     │   └── admin/         # Gestión de usuarios, grupos y slots
@@ -99,6 +100,7 @@ dotnet ef database update --startup-project ../SL.Api
 
 | Controlador | Ruta base | Descripción |
 |---|---|---|
+| Setup | `/api/setup` | Configuración inicial — estado y creación del primer SuperAdmin |
 | Auth | `/api/auth` | Registro, login, perfil (`/me`) |
 | Groups | `/api/groups` | Grupos del usuario, solicitar unirse, aprobar miembros |
 | Schedule | `/api/schedule` | Slots semanales, reservas, gestión de slots |
@@ -113,10 +115,22 @@ dotnet ef database update --startup-project ../SL.Api
 | `GroupAdmin` | Todo de User + crear/eliminar slots, aprobar miembros |
 | `SuperAdmin` | Todo + gestión global de usuarios y grupos |
 
+## Primera ejecución
+
+La base de datos arranca vacía — sin usuarios. Al abrir la app por primera vez:
+
+1. El frontend detecta que no hay ningún `SuperAdmin` (`GET /api/setup/status`)
+2. Redirige automáticamente a `/setup`
+3. Se llena el formulario con los datos del administrador
+4. Se crea el `SuperAdmin` y redirige a `/login`
+
+Una vez completado el setup, `/setup` queda bloqueada para todos.
+
 ## Flujo de usuario
 
-1. Usuario se registra → estado `Pending`
-2. `GroupAdmin` aprueba → estado `Approved`
-3. Usuario inicia sesión → JWT con `role` y `groupId`
-4. Reserva slots en la vista semanal
-5. Cambios se reflejan en tiempo real vía SignalR para todos los miembros del grupo
+1. `SuperAdmin` crea grupos desde `/admin/groups`
+2. Usuario se registra → estado `Pending`
+3. `GroupAdmin` aprueba desde `/admin/users` → estado `Approved`
+4. Usuario inicia sesión → JWT con `role` y `groupId`
+5. Reserva slots en la vista semanal
+6. Cambios se reflejan en tiempo real vía SignalR para todos los miembros del grupo
