@@ -9,9 +9,8 @@ namespace SL.Tests.Services;
 public class GroupServiceTests
 {
     private readonly Mock<IGroupMembershipRepository> _membershipRepo = new();
-    private readonly Mock<IGroupRepository> _groupRepo = new();
 
-    private GroupService CreateSut() => new(_membershipRepo.Object, _groupRepo.Object);
+    private GroupService CreateSut() => new(_membershipRepo.Object);
 
     [Fact]
     public async Task GetUserGroupAsync_ReturnsNull_WhenNoApprovedMembership()

@@ -6,7 +6,7 @@ using SL.Domain.Repositories;
 
 namespace SL.Application.Services;
 
-public class GroupService(IGroupMembershipRepository membershipRepo, IGroupRepository groupRepo) : IGroupService
+public class GroupService(IGroupMembershipRepository membershipRepo) : IGroupService
 {
     public async Task<GroupDto?> GetUserGroupAsync(Guid userId)
     {
