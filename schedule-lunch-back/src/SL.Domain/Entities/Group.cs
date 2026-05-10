@@ -9,4 +9,5 @@ public class Group : IAuditable
     public string? Description { get; set; }
 
     public ICollection<GroupMembership> Memberships { get; set; } = new List<GroupMembership>();
+    public ICollection<TimeSlot> TimeSlots { get; set; } = new List<TimeSlot>();
 }
