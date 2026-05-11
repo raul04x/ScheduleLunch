@@ -75,7 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Content */}
       <div className="flex-1 flex flex-col">
-        <main className="flex-1 md:pt-0 pt-14 pb-16 md:pb-0 p-6">
+        <main className="flex-1 p-6 pt-20 pb-20 md:py-6">
           {children}
         </main>
       </div>

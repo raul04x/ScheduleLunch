@@ -52,7 +52,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       <MobileTopBar />
 
       {/* Content */}
-      <main className="md:pt-0 pt-14 pb-16 md:pb-0 p-6">
+      <main className="p-6 pt-20 pb-20 md:py-6">
         {children}
       </main>
 
