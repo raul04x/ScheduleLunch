@@ -8,7 +8,7 @@ using SL.Infrastructure.Data;
 namespace SL.Api.Controllers;
 
 [ApiController]
-[Route("api/setup")]
+[Route("sch-lunch-api/setup")]
 public class SetupController(ScheduleDbContext db) : ControllerBase
 {
     [HttpGet("status")]

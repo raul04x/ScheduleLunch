@@ -6,8 +6,14 @@ using SL.Domain.Repositories;
 
 namespace SL.Application.Services;
 
-public class GroupService(IGroupMembershipRepository membershipRepo) : IGroupService
+public class GroupService(IGroupRepository groupRepo, IGroupMembershipRepository membershipRepo) : IGroupService
 {
+    public async Task<IEnumerable<GroupDto>> GetAllGroupsAsync()
+    {
+        var groups = await groupRepo.GetAllAsync();
+        return groups.Select(g => new GroupDto(g.Id, g.Name, g.Description));
+    }
+
     public async Task<GroupDto?> GetUserGroupAsync(Guid userId)
     {
         var membership = await membershipRepo.GetApprovedByUserIdAsync(userId);
@@ -41,15 +47,15 @@ public class GroupService(IGroupMembershipRepository membershipRepo) : IGroupSer
         });
     }
 
-    public async Task ApproveMemberAsync(Guid groupId, Guid targetUserId)
+    public async Task ApproveMemberAsync(Guid targetUserId)
     {
-        var membership = await membershipRepo.GetAsync(targetUserId, groupId)
+        var membership = await membershipRepo.GetByUserIdAsync(targetUserId)
             ?? throw new InvalidOperationException("Membership not found");
 
         membership.Status = MembershipStatus.Approved;
         await membershipRepo.UpdateAsync(membership);
     }
 
-    public Task RemoveMemberAsync(Guid groupId, Guid targetUserId) =>
-        membershipRepo.DeleteAsync(targetUserId, groupId);
+    public Task RemoveMemberAsync(Guid targetUserId) =>
+        membershipRepo.DeleteByUserIdAsync(targetUserId);
 }

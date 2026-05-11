@@ -1,17 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Background -->
-  <rect width="32" height="32" rx="6" fill="#4F46E5"/>
-
-  <!-- Fork -->
-  <rect x="6.5" y="4.5" width="1.8" height="8" rx="0.9" fill="white"/>
-  <rect x="9.5" y="4.5" width="1.8" height="8" rx="0.9" fill="white"/>
-  <rect x="12.5" y="4.5" width="1.8" height="8" rx="0.9" fill="white"/>
-  <path d="M6.5 12.5 Q6.5 16.5 10.4 16.5 Q14.3 16.5 14.3 12.5Z" fill="white"/>
-  <rect x="9.5" y="15.8" width="1.8" height="11.7" rx="0.9" fill="white"/>
-
-  <!-- Clock -->
-  <circle cx="23" cy="17" r="7" stroke="white" stroke-width="2" fill="none"/>
-  <line x1="23" y1="17" x2="23" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
-  <line x1="23" y1="17" x2="26.5" y2="17" stroke="white" stroke-width="2" stroke-linecap="round"/>
-  <circle cx="23" cy="17" r="1.2" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0A1628" />
+  <circle cx="256" cy="188" r="118" fill="#0F2040" />
+  <circle cx="256" cy="188" r="118" fill="none" stroke="#C8D4E6" stroke-width="11" />
+  <line x1="256" y1="75" x2="256" y2="97" stroke="#C8D4E6" stroke-width="9" stroke-linecap="round" />
+  <line x1="369" y1="188" x2="347" y2="188" stroke="#C8D4E6" stroke-width="9" stroke-linecap="round" />
+  <line x1="256" y1="301" x2="256" y2="279" stroke="#C8D4E6" stroke-width="9" stroke-linecap="round" />
+  <line x1="143" y1="188" x2="165" y2="188" stroke="#C8D4E6" stroke-width="9" stroke-linecap="round" />
+  <line x1="256" y1="188" x2="191" y2="151" stroke="#C8D4E6" stroke-width="14"
+    stroke-linecap="round" />
+  <line x1="256" y1="188" x2="256" y2="103" stroke="#F0A825" stroke-width="10"
+    stroke-linecap="round" />
+  <circle cx="256" cy="188" r="12" fill="#F0A825" />
+  <circle cx="256" cy="188" r="5" fill="#0F2040" />
+  <circle cx="128" cy="398" r="27" fill="#1D3A5E" />
+  <path d="M76 472 Q76 430 128 430 Q180 430 180 472Z" fill="#1D3A5E" />
+  <circle cx="256" cy="386" r="33" fill="#F0A825" />
+  <path d="M192 472 Q192 423 256 423 Q320 423 320 472Z" fill="#F0A825" />
+  <circle cx="384" cy="398" r="27" fill="#1D3A5E" />
+  <path d="M332 472 Q332 430 384 430 Q436 430 436 472Z" fill="#1D3A5E" />
 </svg>

@@ -6,7 +6,7 @@ using SL.Application.Interfaces;
 namespace SL.Api.Controllers;
 
 [ApiController]
-[Route("api/admin")]
+[Route("sch-lunch-api/admin")]
 [Authorize(Roles = "SuperAdmin")]
 public class AdminController(IAdminService adminService) : ControllerBase
 {

@@ -2,30 +2,43 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
-import type { UserAdminDto, MemberDto, UserRole } from '@/lib/types';
+import { startConnection } from '@/lib/signalr';
+import type { UserAdminDto, UserRole } from '@/lib/types';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserAdminDto[]>([]);
-  const [members, setMembers] = useState<MemberDto[]>([]);
   const token = getToken() ?? '';
 
   useEffect(() => {
     api.admin.getUsers(token).then(setUsers);
-    api.auth.me(token).then(me => {
-      if (me.groupId) api.groups.getMembers(me.groupId, token).then(setMembers);
-    });
   }, [token]);
 
-  const pending = members.filter(m => m.status === 'Pending');
+  useEffect(() => {
+    if (!token) return;
+    let conn: Awaited<ReturnType<typeof startConnection>>;
 
-  async function approveMember(userId: string) {
-    await api.groups.approveMember(userId, token);
-    setMembers(prev => prev.map(m => m.userId === userId ? { ...m, status: 'Approved' as const } : m));
+    startConnection(token).then(c => {
+      conn = c;
+      conn.on('UserPendingApproval', (user: UserAdminDto) => {
+        setUsers(prev => prev.some(u => u.id === user.id) ? prev : [...prev, user]);
+      });
+    });
+
+    return () => { conn?.off('UserPendingApproval'); };
+  }, [token]);
+
+  const pending = users.filter(u => u.membershipStatus === 'Pending');
+
+  async function approveMember(user: UserAdminDto) {
+    if (!user.groupId) return;
+    await api.groups.approveMember(user.id, token);
+    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, membershipStatus: 'Approved' } : u));
   }
 
-  async function removeMember(userId: string) {
-    await api.groups.removeMember(userId, token);
-    setMembers(prev => prev.filter(m => m.userId !== userId));
+  async function rejectMember(user: UserAdminDto) {
+    if (!user.groupId) return;
+    await api.groups.removeMember(user.id, token);
+    setUsers(prev => prev.filter(u => u.id !== user.id));
   }
 
   async function updateRole(userId: string, role: UserRole) {
@@ -57,18 +70,18 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody>
-              {pending.map(m => (
-                <tr key={m.userId} className="border-b border-gray-800/50">
-                  <td className="py-3 text-white">{m.username}</td>
-                  <td className="py-3 text-gray-400">{m.fullName}</td>
+              {pending.map(u => (
+                <tr key={u.id} className="border-b border-gray-800/50">
+                  <td className="py-3 text-white">{u.username}</td>
+                  <td className="py-3 text-gray-400">{u.fullName}</td>
                   <td className="py-3 flex gap-2">
                     <button
-                      onClick={() => approveMember(m.userId)}
+                      onClick={() => approveMember(u)}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded transition-colors">
                       Approve
                     </button>
                     <button
-                      onClick={() => removeMember(m.userId)}
+                      onClick={() => rejectMember(u)}
                       className="bg-gray-700 hover:bg-red-700 text-white text-xs px-3 py-1 rounded transition-colors">
                       Reject
                     </button>

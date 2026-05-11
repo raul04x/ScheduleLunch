@@ -6,12 +6,16 @@ using SL.Application.Interfaces;
 namespace SL.Api.Controllers;
 
 [ApiController]
-[Route("api/groups")]
+[Route("sch-lunch-api/groups")]
 [Authorize]
 public class GroupController(IGroupService groupService) : ControllerBase
 {
     private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     private Guid? CurrentGroupId => User.FindFirst("groupId") is { } c ? Guid.Parse(c.Value) : null;
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll() =>
+        Ok(await groupService.GetAllGroupsAsync());
 
     [HttpGet("my-group")]
     public async Task<IActionResult> GetMyGroup()
@@ -36,17 +40,15 @@ public class GroupController(IGroupService groupService) : ControllerBase
     [Authorize(Roles = "GroupAdmin,SuperAdmin")]
     public async Task<IActionResult> ApproveMember(Guid targetUserId)
     {
-        if (CurrentGroupId is null) return Forbid();
-        await groupService.ApproveMemberAsync(CurrentGroupId.Value, targetUserId);
-        return Ok();
+        await groupService.ApproveMemberAsync(targetUserId);
+        return NoContent();
     }
 
     [HttpDelete("members/{targetUserId}")]
     [Authorize(Roles = "GroupAdmin,SuperAdmin")]
     public async Task<IActionResult> RemoveMember(Guid targetUserId)
     {
-        if (CurrentGroupId is null) return Forbid();
-        await groupService.RemoveMemberAsync(CurrentGroupId.Value, targetUserId);
-        return Ok();
+        await groupService.RemoveMemberAsync(targetUserId);
+        return NoContent();
     }
 }

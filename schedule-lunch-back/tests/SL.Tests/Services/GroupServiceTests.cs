@@ -8,9 +8,10 @@ namespace SL.Tests.Services;
 
 public class GroupServiceTests
 {
+    private readonly Mock<IGroupRepository> _groupRepo = new();
     private readonly Mock<IGroupMembershipRepository> _membershipRepo = new();
 
-    private GroupService CreateSut() => new(_membershipRepo.Object);
+    private GroupService CreateSut() => new(_groupRepo.Object, _membershipRepo.Object);
 
     [Fact]
     public async Task GetUserGroupAsync_ReturnsNull_WhenNoApprovedMembership()
@@ -60,10 +61,10 @@ public class GroupServiceTests
     [Fact]
     public async Task ApproveMemberAsync_Throws_WhenMembershipNotFound()
     {
-        _membershipRepo.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
+        _membershipRepo.Setup(r => r.GetByUserIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync((GroupMembership?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => CreateSut().ApproveMemberAsync(Guid.NewGuid(), Guid.NewGuid()));
+            () => CreateSut().ApproveMemberAsync(Guid.NewGuid()));
     }
 }

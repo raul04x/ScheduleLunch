@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using SL.Application.Auth;
@@ -7,12 +8,13 @@ using SL.Application.DTOs;
 using SL.Domain.Entities;
 using SL.Domain.Enums;
 using SL.Infrastructure.Data;
+using SL.Infrastructure.Hubs;
 
 namespace SL.Api.Controllers;
 
 [ApiController]
-[Route("api/auth")]
-public class AuthController(ScheduleDbContext db, TokenService tokenService) : ControllerBase
+[Route("sch-lunch-api/auth")]
+public class AuthController(ScheduleDbContext db, TokenService tokenService, IHubContext<ActivityHub> hub) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<IActionResult> Register(UserRegisterDto dto)
@@ -29,6 +31,30 @@ public class AuthController(ScheduleDbContext db, TokenService tokenService) : C
 
         db.Users.Add(user);
         await db.SaveChangesAsync();
+
+        var group = await db.Groups.FirstOrDefaultAsync();
+        if (group is not null)
+        {
+            db.GroupMemberships.Add(new GroupMembership
+            {
+                UserId = user.Id,
+                GroupId = group.Id,
+                Status = MembershipStatus.Pending,
+                Role = MembershipRole.Member
+            });
+            await db.SaveChangesAsync();
+
+            await hub.Clients.Group($"group-{group.Id}").SendAsync("UserPendingApproval", new
+            {
+                user.Id,
+                user.Username,
+                user.Email,
+                FullName = $"{user.FirstName} {user.LastName}".Trim(),
+                Role = user.Role.ToString(),
+                MembershipStatus = "Pending",
+                GroupId = group.Id,
+            });
+        }
 
         return Ok(new AuthResponseDto(user.Id, user.Username, tokenService.CreateToken(user)));
     }
@@ -58,7 +84,7 @@ public class AuthController(ScheduleDbContext db, TokenService tokenService) : C
         if (user is null) return NotFound();
 
         var membership = await db.GroupMemberships
-            .FirstOrDefaultAsync(m => m.UserId == userId && m.Status == MembershipStatus.Approved);
+            .FirstOrDefaultAsync(m => m.UserId == userId);
 
         return Ok(new
         {
@@ -68,7 +94,7 @@ public class AuthController(ScheduleDbContext db, TokenService tokenService) : C
             user.FirstName,
             user.LastName,
             Role = user.Role.ToString(),
-            GroupId = membership?.GroupId,
+            GroupId = membership?.Status == MembershipStatus.Approved ? membership.GroupId : (Guid?)null,
             MembershipStatus = membership?.Status.ToString() ?? "None"
         });
     }

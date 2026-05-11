@@ -11,10 +11,21 @@ namespace SL.Application.Services;
 public class AdminService(ScheduleDbContext db, IGroupRepository groupRepo) : IAdminService
 {
     public async Task<IEnumerable<UserAdminDto>> GetAllUsersAsync() =>
-        await db.Users.Select(u => new UserAdminDto(
-            u.Id, u.Username, u.Email,
-            $"{u.FirstName} {u.LastName}".Trim(),
-            u.Role)).ToListAsync();
+        await db.Users
+            .GroupJoin(
+                db.GroupMemberships,
+                u => u.Id,
+                m => m.UserId,
+                (u, memberships) => new { u, memberships })
+            .SelectMany(
+                x => x.memberships.DefaultIfEmpty(),
+                (x, m) => new UserAdminDto(
+                    x.u.Id, x.u.Username, x.u.Email,
+                    $"{x.u.FirstName} {x.u.LastName}".Trim(),
+                    x.u.Role,
+                    m != null ? m.Status.ToString() : "None",
+                    m != null ? (Guid?)m.GroupId : null))
+            .ToListAsync();
 
     public async Task UpdateUserRoleAsync(Guid userId, UserRole role)
     {

@@ -11,6 +11,9 @@ public class GroupMembershipRepository(ScheduleDbContext db) : IGroupMembershipR
     public Task<GroupMembership?> GetAsync(Guid userId, Guid groupId) =>
         db.GroupMemberships.FirstOrDefaultAsync(m => m.UserId == userId && m.GroupId == groupId);
 
+    public Task<GroupMembership?> GetByUserIdAsync(Guid userId) =>
+        db.GroupMemberships.FirstOrDefaultAsync(m => m.UserId == userId);
+
     public Task<GroupMembership?> GetApprovedByUserIdAsync(Guid userId) =>
         db.GroupMemberships
             .Include(m => m.Group)
@@ -37,6 +40,16 @@ public class GroupMembershipRepository(ScheduleDbContext db) : IGroupMembershipR
     public async Task DeleteAsync(Guid userId, Guid groupId)
     {
         var m = await GetAsync(userId, groupId);
+        if (m is not null)
+        {
+            db.GroupMemberships.Remove(m);
+            await db.SaveChangesAsync();
+        }
+    }
+
+    public async Task DeleteByUserIdAsync(Guid userId)
+    {
+        var m = await GetByUserIdAsync(userId);
         if (m is not null)
         {
             db.GroupMemberships.Remove(m);

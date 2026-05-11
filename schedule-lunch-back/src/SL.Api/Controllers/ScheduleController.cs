@@ -4,33 +4,37 @@ using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 using SL.Application.DTOs;
 using SL.Application.Interfaces;
+using SL.Domain.Repositories;
 using SL.Infrastructure.Hubs;
 
 namespace SL.Api.Controllers;
 
 [ApiController]
-[Route("api/schedule")]
+[Route("sch-lunch-api/schedule")]
 [Authorize]
-public class ScheduleController(IScheduleService scheduleService, IHubContext<ActivityHub> hub) : ControllerBase
+public class ScheduleController(IScheduleService scheduleService, IHubContext<ActivityHub> hub, IGroupMembershipRepository membershipRepo) : ControllerBase
 {
     private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     private string CurrentUsername => User.FindFirstValue(ClaimTypes.Name)!;
     private Guid? CurrentGroupId => Guid.TryParse(User.FindFirst("groupId")?.Value, out var id) ? id : null;
 
+    private async Task<Guid?> ResolveGroupIdAsync() =>
+        CurrentGroupId ?? (await membershipRepo.GetApprovedByUserIdAsync(CurrentUserId))?.GroupId;
+
     [HttpGet("week")]
     public async Task<IActionResult> GetWeek() =>
-        CurrentGroupId is not { } gid ? Forbid() :
+        await ResolveGroupIdAsync() is not { } gid ? Forbid() :
         Ok(await scheduleService.GetWeekSlotsAsync(gid, CurrentUserId));
 
     [HttpGet("day")]
     public async Task<IActionResult> GetDay([FromQuery] DateOnly date) =>
-        CurrentGroupId is not { } gid ? Forbid() :
+        await ResolveGroupIdAsync() is not { } gid ? Forbid() :
         Ok(await scheduleService.GetDaySlotsAsync(gid, date, CurrentUserId));
 
     [HttpPost("{slotId}/reserve")]
     public async Task<IActionResult> Reserve(Guid slotId)
     {
-        if (CurrentGroupId is not { } gid) return Forbid();
+        if (await ResolveGroupIdAsync() is not { } gid) return Forbid();
         var slot = await scheduleService.ReserveSlotAsync(slotId, CurrentUserId);
         await hub.Clients.Group($"group-{gid}")
             .SendAsync("UserReserved", new ActivityEventDto(
@@ -42,7 +46,7 @@ public class ScheduleController(IScheduleService scheduleService, IHubContext<Ac
     [HttpDelete("{slotId}/reserve")]
     public async Task<IActionResult> Cancel(Guid slotId)
     {
-        if (CurrentGroupId is not { } gid) return Forbid();
+        if (await ResolveGroupIdAsync() is not { } gid) return Forbid();
         var slot = await scheduleService.CancelReservationAsync(slotId, CurrentUserId);
         await hub.Clients.Group($"group-{gid}")
             .SendAsync("UserCancelled", new ActivityEventDto(
@@ -55,7 +59,7 @@ public class ScheduleController(IScheduleService scheduleService, IHubContext<Ac
     [Authorize(Roles = "GroupAdmin,SuperAdmin")]
     public async Task<IActionResult> CreateSlot(CreateTimeSlotDto dto)
     {
-        if (CurrentGroupId is not { } gid) return Forbid();
+        if (await ResolveGroupIdAsync() is not { } gid) return Forbid();
         var slot = await scheduleService.CreateSlotAsync(gid, dto);
         await hub.Clients.Group($"group-{gid}")
             .SendAsync("SlotCreated", new ActivityEventDto(
@@ -68,7 +72,7 @@ public class ScheduleController(IScheduleService scheduleService, IHubContext<Ac
     [Authorize(Roles = "GroupAdmin,SuperAdmin")]
     public async Task<IActionResult> DeleteSlot(Guid slotId)
     {
-        if (CurrentGroupId is not { } gid) return Forbid();
+        if (await ResolveGroupIdAsync() is not { } gid) return Forbid();
         var slots = await scheduleService.GetDaySlotsAsync(gid, DateOnly.FromDateTime(DateTime.UtcNow), CurrentUserId);
         var slot = slots.FirstOrDefault(s => s.Id == slotId);
         await scheduleService.DeleteSlotAsync(slotId);

@@ -57,6 +57,8 @@ export interface UserAdminDto {
   email: string;
   fullName: string;
   role: UserRole;
+  membershipStatus: MembershipStatus;
+  groupId: string | null;
 }
 
 export interface ActivityEvent {

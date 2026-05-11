@@ -41,7 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             OnMessageReceived = ctx =>
             {
                 var token = ctx.Request.Query["access_token"];
-                if (!string.IsNullOrEmpty(token) && ctx.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                if (!string.IsNullOrEmpty(token) && ctx.HttpContext.Request.Path.StartsWithSegments("/sch-lunch-api/hubs"))
                     ctx.Token = token;
                 return Task.CompletedTask;
             }
@@ -101,6 +101,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<ActivityHub>("/hubs/activity");
+app.MapHub<ActivityHub>("/sch-lunch-api/hubs/activity");
 
 app.Run();

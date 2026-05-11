@@ -16,53 +16,53 @@ async function request<T>(path: string, options?: RequestInit, token?: string): 
 export const api = {
   auth: {
     login: (username: string, password: string) =>
-      request<{ userId: string; username: string; token: string }>('/api/auth/login', {
+      request<{ userId: string; username: string; token: string }>('/sch-lunch-api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       }),
     register: (username: string, email: string, password: string) =>
-      request<{ userId: string; username: string; token: string }>('/api/auth/register', {
+      request<{ userId: string; username: string; token: string }>('/sch-lunch-api/auth/register', {
         method: 'POST',
         body: JSON.stringify({ username, email, password }),
       }),
     me: (token: string) =>
-      request<import('./types').MeResponse>('/api/auth/me', {}, token),
+      request<import('./types').MeResponse>('/sch-lunch-api/auth/me', {}, token),
   },
   schedule: {
     getWeek: (token: string) =>
-      request<import('./types').TimeSlotDto[]>('/api/schedule/week', {}, token),
+      request<import('./types').TimeSlotDto[]>('/sch-lunch-api/schedule/week', {}, token),
     reserve: (slotId: string, token: string) =>
-      request<import('./types').TimeSlotDto>(`/api/schedule/${slotId}/reserve`, { method: 'POST' }, token),
+      request<import('./types').TimeSlotDto>(`/sch-lunch-api/schedule/${slotId}/reserve`, { method: 'POST' }, token),
     cancel: (slotId: string, token: string) =>
-      request<import('./types').TimeSlotDto>(`/api/schedule/${slotId}/reserve`, { method: 'DELETE' }, token),
+      request<import('./types').TimeSlotDto>(`/sch-lunch-api/schedule/${slotId}/reserve`, { method: 'DELETE' }, token),
     createSlot: (dto: import('./types').CreateTimeSlotPayload, token: string) =>
-      request<import('./types').TimeSlotDto>('/api/schedule/slots', { method: 'POST', body: JSON.stringify(dto) }, token),
+      request<import('./types').TimeSlotDto>('/sch-lunch-api/schedule/slots', { method: 'POST', body: JSON.stringify(dto) }, token),
     deleteSlot: (slotId: string, token: string) =>
-      request<void>(`/api/schedule/slots/${slotId}`, { method: 'DELETE' }, token),
+      request<void>(`/sch-lunch-api/schedule/slots/${slotId}`, { method: 'DELETE' }, token),
   },
   groups: {
     getAll: (token: string) =>
-      request<import('./types').GroupDto[]>('/api/admin/groups', {}, token),
+      request<import('./types').GroupDto[]>('/sch-lunch-api/admin/groups', {}, token),
     create: (name: string, description: string | null, token: string) =>
-      request<import('./types').GroupDto>('/api/admin/groups', { method: 'POST', body: JSON.stringify({ name, description }) }, token),
+      request<import('./types').GroupDto>('/sch-lunch-api/admin/groups', { method: 'POST', body: JSON.stringify({ name, description }) }, token),
     delete: (id: string, token: string) =>
-      request<void>(`/api/admin/groups/${id}`, { method: 'DELETE' }, token),
+      request<void>(`/sch-lunch-api/admin/groups/${id}`, { method: 'DELETE' }, token),
     getMembers: (groupId: string, token: string) =>
-      request<import('./types').MemberDto[]>(`/api/groups/${groupId}/members`, {}, token),
+      request<import('./types').MemberDto[]>(`/sch-lunch-api/groups/${groupId}/members`, {}, token),
     approveMember: (userId: string, token: string) =>
-      request<void>(`/api/groups/members/${userId}/approve`, { method: 'PATCH' }, token),
+      request<void>(`/sch-lunch-api/groups/members/${userId}/approve`, { method: 'PATCH' }, token),
     removeMember: (userId: string, token: string) =>
-      request<void>(`/api/groups/members/${userId}`, { method: 'DELETE' }, token),
+      request<void>(`/sch-lunch-api/groups/members/${userId}`, { method: 'DELETE' }, token),
   },
   admin: {
     getUsers: (token: string) =>
-      request<import('./types').UserAdminDto[]>('/api/admin/users', {}, token),
+      request<import('./types').UserAdminDto[]>('/sch-lunch-api/admin/users', {}, token),
     updateRole: (userId: string, role: import('./types').UserRole, token: string) =>
-      request<void>(`/api/admin/users/${userId}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }, token),
+      request<void>(`/sch-lunch-api/admin/users/${userId}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }, token),
   },
   setup: {
     status: (): Promise<{ setupRequired: boolean }> =>
-      request<{ setupRequired: boolean }>('/api/setup/status'),
+      request<{ setupRequired: boolean }>('/sch-lunch-api/setup/status'),
     init: (data: {
       username: string;
       email: string;
@@ -72,6 +72,6 @@ export const api = {
       groupName: string;
       groupDescription?: string;
     }): Promise<{ message: string }> =>
-      request<{ message: string }>('/api/setup/init', { method: 'POST', body: JSON.stringify(data) }),
+      request<{ message: string }>('/sch-lunch-api/setup/init', { method: 'POST', body: JSON.stringify(data) }),
   },
 };
