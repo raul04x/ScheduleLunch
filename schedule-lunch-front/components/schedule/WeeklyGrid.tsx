@@ -1,4 +1,5 @@
 'use client';
+
 import type { TimeSlotDto } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { SlotCell } from './SlotCell';
@@ -32,10 +33,16 @@ export function WeeklyGrid({ slots, onToggle, loadingSlotId }: Props) {
       <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th className="w-24 text-left text-xs text-gray-500 pb-2">{t.scheduleHeader}</th>
+            <th className="w-24 text-left text-xs text-[var(--color-text-muted)] pb-2">
+              {t.scheduleHeader}
+            </th>
             {weekDates.map((date, i) => (
-              <th key={date} className="text-center text-xs text-gray-400 pb-2 px-1">
-                <div className={`rounded px-2 py-1 ${date === today ? 'bg-indigo-900 text-indigo-300' : ''}`}>
+              <th key={date} className="text-center text-xs text-[var(--color-text-muted)] pb-2 px-1">
+                <div className={`rounded px-2 py-1 ${
+                  date === today
+                    ? 'bg-[var(--color-accent-dim)] text-[var(--color-accent)] font-semibold'
+                    : ''
+                }`}>
                   {t.days[i]}<br />{date.slice(8)}
                 </div>
               </th>
@@ -45,21 +52,25 @@ export function WeeklyGrid({ slots, onToggle, loadingSlotId }: Props) {
         <tbody>
           {allLabels.map(label => (
             <tr key={label}>
-              <td className="text-xs text-gray-500 py-1 pr-2">{label}</td>
+              <td className="text-xs text-[var(--color-text-muted)] py-1 pr-2">{label}</td>
               {weekDates.map(date => {
                 const slot = slots.find(s => s.date.startsWith(date) && s.label === label);
                 return (
                   <td key={date} className="px-1 py-1">
                     {slot
                       ? <SlotCell slot={slot} onToggle={onToggle} loading={loadingSlotId === slot.id} />
-                      : <div className="h-12 rounded bg-gray-900 opacity-30" />}
+                      : <div className="h-12 rounded bg-[var(--color-bg-subtle)] opacity-40" />}
                   </td>
                 );
               })}
             </tr>
           ))}
           {allLabels.length === 0 && (
-            <tr><td colSpan={6} className="text-center text-gray-600 py-8">{t.noSlotsThisWeek}</td></tr>
+            <tr>
+              <td colSpan={6} className="text-center text-[var(--color-text-muted)] py-8">
+                {t.noSlotsThisWeek}
+              </td>
+            </tr>
           )}
         </tbody>
       </table>
