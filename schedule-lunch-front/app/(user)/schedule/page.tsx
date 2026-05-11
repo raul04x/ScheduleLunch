@@ -1,10 +1,12 @@
 'use client';
+
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { startConnection } from '@/lib/signalr';
 import { useTranslation } from '@/lib/i18n';
 import { WeeklyGrid } from '@/components/schedule/WeeklyGrid';
+import { DayView } from '@/components/schedule/DayView';
 import { ActivityFeed } from '@/components/schedule/ActivityFeed';
 import type { TimeSlotDto, ActivityEvent } from '@/lib/types';
 
@@ -73,12 +75,27 @@ export default function SchedulePage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-6">{t.currentWeek}</h1>
-      {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
-      <WeeklyGrid slots={slots} onToggle={handleToggle} loadingSlotId={loadingSlotId} />
-      <div className="mt-8 bg-gray-900 rounded-xl p-4 border border-gray-800">
-        <h2 className="text-sm font-medium text-gray-400 mb-3">{t.recentActivity}</h2>
-        <ActivityFeed events={activity} />
+      <h1 className="text-2xl font-bold text-[var(--color-text)] mb-6 hidden md:block">
+        {t.currentWeek}
+      </h1>
+      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
+      {/* Desktop: weekly grid */}
+      <div className="hidden md:block">
+        <WeeklyGrid slots={slots} onToggle={handleToggle} loadingSlotId={loadingSlotId} />
+        <div className="mt-8 bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
+          <h2 className="text-sm font-medium text-[var(--color-text-muted)] mb-3">{t.recentActivity}</h2>
+          <ActivityFeed events={activity} />
+        </div>
+      </div>
+
+      {/* Mobile: day view */}
+      <div className="md:hidden">
+        <DayView slots={slots} onToggle={handleToggle} loadingSlotId={loadingSlotId} />
+        <div className="mt-6 bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
+          <h2 className="text-sm font-medium text-[var(--color-text-muted)] mb-3">{t.recentActivity}</h2>
+          <ActivityFeed events={activity} />
+        </div>
       </div>
     </div>
   );
