@@ -1,9 +1,13 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { startConnection } from '@/lib/signalr';
 import { useTranslation } from '@/lib/i18n';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import type { UserAdminDto, UserRole } from '@/lib/types';
 
 export default function AdminUsersPage() {
@@ -52,69 +56,95 @@ export default function AdminUsersPage() {
     <div className="flex flex-col gap-8">
       {/* Pending approvals */}
       <section>
-        <h2 className="text-base font-semibold text-white mb-4">
+        <h2 className="text-base font-semibold text-[var(--color-text)] mb-4 flex items-center gap-2">
           {t.pendingApprovals}
           {pending.length > 0 && (
-            <span className="ml-2 bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-              {pending.length}
-            </span>
+            <Badge variant="accent">{pending.length}</Badge>
           )}
         </h2>
+
         {pending.length === 0 ? (
-          <p className="text-gray-500 text-sm">{t.noPendingRequests}</p>
+          <p className="text-[var(--color-text-muted)] text-sm">{t.noPendingRequests}</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-800">
-                <th className="pb-2">{t.userCol}</th>
-                <th className="pb-2">{t.fullNameCol}</th>
-                <th className="pb-2">{t.actionsCol}</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Desktop: table */}
+            <div className="hidden md:block">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
+                    <th className="pb-2">{t.userCol}</th>
+                    <th className="pb-2">{t.fullNameCol}</th>
+                    <th className="pb-2">{t.actionsCol}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pending.map(u => (
+                    <tr key={u.id} className="border-b border-[var(--color-border)]">
+                      <td className="py-3 text-[var(--color-text)]">{u.username}</td>
+                      <td className="py-3 text-[var(--color-text-muted)]">{u.fullName}</td>
+                      <td className="py-3 flex gap-2">
+                        <Button size="sm" onClick={() => approveMember(u)}>{t.approve}</Button>
+                        <Button size="sm" variant="danger" onClick={() => rejectMember(u)}>{t.reject}</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile: cards */}
+            <div className="md:hidden space-y-3">
               {pending.map(u => (
-                <tr key={u.id} className="border-b border-gray-800/50">
-                  <td className="py-3 text-white">{u.username}</td>
-                  <td className="py-3 text-gray-400">{u.fullName}</td>
-                  <td className="py-3 flex gap-2">
-                    <button
-                      onClick={() => approveMember(u)}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded transition-colors">
+                <Card key={u.id} className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[var(--color-accent-dim)] flex items-center justify-center text-[var(--color-accent)] font-bold text-sm">
+                        {(u.fullName?.[0] ?? u.username[0]).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[var(--color-text)] text-sm">{u.fullName || u.username}</p>
+                        <p className="text-xs text-[var(--color-text-muted)]">{u.email}</p>
+                      </div>
+                    </div>
+                    <Badge variant="gold">Pendiente</Badge>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <Button variant="primary" size="sm" className="flex-1" onClick={() => approveMember(u)}>
                       {t.approve}
-                    </button>
-                    <button
-                      onClick={() => rejectMember(u)}
-                      className="bg-gray-700 hover:bg-red-700 text-white text-xs px-3 py-1 rounded transition-colors">
+                    </Button>
+                    <Button variant="danger" size="sm" className="flex-1" onClick={() => rejectMember(u)}>
                       {t.reject}
-                    </button>
-                  </td>
-                </tr>
+                    </Button>
+                  </div>
+                </Card>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </section>
 
       {/* All users */}
       <section>
-        <h2 className="text-base font-semibold text-white mb-4">{t.allUsers}</h2>
+        <h2 className="text-base font-semibold text-[var(--color-text)] mb-4">{t.allUsers}</h2>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-gray-500 border-b border-gray-800">
+            <tr className="text-left text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
               <th className="pb-2">{t.userCol}</th>
-              <th className="pb-2">{t.emailCol}</th>
+              <th className="pb-2 hidden md:table-cell">{t.emailCol}</th>
               <th className="pb-2">{t.roleCol}</th>
             </tr>
           </thead>
           <tbody>
             {users.map(u => (
-              <tr key={u.id} className="border-b border-gray-800/50">
-                <td className="py-3 text-white">{u.username}</td>
-                <td className="py-3 text-gray-400">{u.email}</td>
+              <tr key={u.id} className="border-b border-[var(--color-border)]">
+                <td className="py-3 text-[var(--color-text)]">{u.username}</td>
+                <td className="py-3 text-[var(--color-text-muted)] hidden md:table-cell">{u.email}</td>
                 <td className="py-3">
-                  <select value={u.role}
+                  <select
+                    value={u.role}
                     onChange={e => updateRole(u.id, e.target.value as UserRole)}
-                    className="bg-gray-800 text-white rounded px-2 py-1 text-xs border border-gray-700">
+                    className="bg-[var(--color-bg-subtle)] text-[var(--color-text)] rounded px-2 py-1 text-xs border border-[var(--color-border)]"
+                  >
                     <option value="User">User</option>
                     <option value="GroupAdmin">GroupAdmin</option>
                     <option value="SuperAdmin">SuperAdmin</option>
