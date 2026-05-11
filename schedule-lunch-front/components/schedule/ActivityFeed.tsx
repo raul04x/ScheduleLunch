@@ -1,31 +1,37 @@
+'use client';
 import type { ActivityEvent } from '@/lib/types';
+import { useTranslation } from '@/lib/i18n';
 
 interface Props { events: ActivityEvent[] }
 
-const labels: Record<ActivityEvent['type'], string> = {
+const icons: Record<ActivityEvent['type'], string> = {
   UserReserved: '🟢',
   UserCancelled: '🟡',
   SlotCreated: '🔵',
   SlotDeleted: '🔴',
 };
 
-const messages: Record<ActivityEvent['type'], (e: ActivityEvent) => string> = {
-  UserReserved: e => `${e.userName} reservo ${e.slotLabel} (${e.attendeeCount}/${e.capacity})`,
-  UserCancelled: e => `${e.userName} cancelo ${e.slotLabel} (${e.attendeeCount}/${e.capacity})`,
-  SlotCreated: e => `Nuevo slot ${e.slotLabel} creado (cap. ${e.capacity})`,
-  SlotDeleted: e => `Slot ${e.slotLabel} eliminado`,
-};
-
 export function ActivityFeed({ events }: Props) {
+  const { t } = useTranslation();
+
   if (events.length === 0)
-    return <p className="text-gray-600 text-sm">Sin actividad reciente.</p>;
+    return <p className="text-gray-600 text-sm">{t.noRecentActivity}</p>;
+
+  function getMessage(e: ActivityEvent): string {
+    switch (e.type) {
+      case 'UserReserved': return t.activityReserved(e.userName, e.slotLabel, e.attendeeCount, e.capacity);
+      case 'UserCancelled': return t.activityCancelled(e.userName, e.slotLabel, e.attendeeCount, e.capacity);
+      case 'SlotCreated': return t.activitySlotCreated(e.slotLabel, e.capacity);
+      case 'SlotDeleted': return t.activitySlotDeleted(e.slotLabel);
+    }
+  }
 
   return (
     <ul className="flex flex-col gap-1">
       {events.map((e, i) => (
         <li key={i} className="text-sm text-gray-300 flex gap-2">
-          <span>{labels[e.type]}</span>
-          <span>{messages[e.type](e)}</span>
+          <span>{icons[e.type]}</span>
+          <span>{getMessage(e)}</span>
           <span className="text-gray-600 text-xs ml-auto">{e.date}</span>
         </li>
       ))}

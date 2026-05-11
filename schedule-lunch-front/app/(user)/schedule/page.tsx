@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { startConnection } from '@/lib/signalr';
+import { useTranslation } from '@/lib/i18n';
 import { WeeklyGrid } from '@/components/schedule/WeeklyGrid';
 import { ActivityFeed } from '@/components/schedule/ActivityFeed';
 import type { TimeSlotDto, ActivityEvent } from '@/lib/types';
@@ -12,6 +13,7 @@ export default function SchedulePage() {
   const [activity, setActivity] = useState<ActivityEvent[]>([]);
   const [loadingSlotId, setLoadingSlotId] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const { t } = useTranslation();
 
   const token = getToken() ?? '';
 
@@ -20,9 +22,9 @@ export default function SchedulePage() {
       const data = await api.schedule.getWeek(token);
       setSlots(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error cargando slots');
+      setError(e instanceof Error ? e.message : t.errorLoadingSlots);
     }
-  }, [token]);
+  }, [token, t]);
 
   useEffect(() => {
     fetchSlots();
@@ -63,7 +65,7 @@ export default function SchedulePage() {
         setSlots(prev => prev.map(s => s.id === updated.id ? updated : s));
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al actualizar reserva');
+      setError(e instanceof Error ? e.message : t.errorUpdatingSlot);
     } finally {
       setLoadingSlotId(null);
     }
@@ -71,11 +73,11 @@ export default function SchedulePage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-6">Semana actual</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">{t.currentWeek}</h1>
       {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
       <WeeklyGrid slots={slots} onToggle={handleToggle} loadingSlotId={loadingSlotId} />
       <div className="mt-8 bg-gray-900 rounded-xl p-4 border border-gray-800">
-        <h2 className="text-sm font-medium text-gray-400 mb-3">Actividad reciente</h2>
+        <h2 className="text-sm font-medium text-gray-400 mb-3">{t.recentActivity}</h2>
         <ActivityFeed events={activity} />
       </div>
     </div>

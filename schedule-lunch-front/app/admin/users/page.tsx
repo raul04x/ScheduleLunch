@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { startConnection } from '@/lib/signalr';
+import { useTranslation } from '@/lib/i18n';
 import type { UserAdminDto, UserRole } from '@/lib/types';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserAdminDto[]>([]);
   const token = getToken() ?? '';
+  const { t } = useTranslation();
 
   useEffect(() => {
     api.admin.getUsers(token).then(setUsers);
@@ -51,7 +53,7 @@ export default function AdminUsersPage() {
       {/* Pending approvals */}
       <section>
         <h2 className="text-base font-semibold text-white mb-4">
-          Pending Approvals
+          {t.pendingApprovals}
           {pending.length > 0 && (
             <span className="ml-2 bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
               {pending.length}
@@ -59,14 +61,14 @@ export default function AdminUsersPage() {
           )}
         </h2>
         {pending.length === 0 ? (
-          <p className="text-gray-500 text-sm">No pending requests.</p>
+          <p className="text-gray-500 text-sm">{t.noPendingRequests}</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-500 border-b border-gray-800">
-                <th className="pb-2">User</th>
-                <th className="pb-2">Full name</th>
-                <th className="pb-2">Actions</th>
+                <th className="pb-2">{t.userCol}</th>
+                <th className="pb-2">{t.fullNameCol}</th>
+                <th className="pb-2">{t.actionsCol}</th>
               </tr>
             </thead>
             <tbody>
@@ -78,12 +80,12 @@ export default function AdminUsersPage() {
                     <button
                       onClick={() => approveMember(u)}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded transition-colors">
-                      Approve
+                      {t.approve}
                     </button>
                     <button
                       onClick={() => rejectMember(u)}
                       className="bg-gray-700 hover:bg-red-700 text-white text-xs px-3 py-1 rounded transition-colors">
-                      Reject
+                      {t.reject}
                     </button>
                   </td>
                 </tr>
@@ -95,13 +97,13 @@ export default function AdminUsersPage() {
 
       {/* All users */}
       <section>
-        <h2 className="text-base font-semibold text-white mb-4">All Users</h2>
+        <h2 className="text-base font-semibold text-white mb-4">{t.allUsers}</h2>
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-gray-500 border-b border-gray-800">
-              <th className="pb-2">User</th>
-              <th className="pb-2">Email</th>
-              <th className="pb-2">Role</th>
+              <th className="pb-2">{t.userCol}</th>
+              <th className="pb-2">{t.emailCol}</th>
+              <th className="pb-2">{t.roleCol}</th>
             </tr>
           </thead>
           <tbody>

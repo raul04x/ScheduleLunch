@@ -30,7 +30,7 @@ ScheduleLunch/
 
 - .NET 10 SDK
 - Node.js 20+
-- PostgreSQL 15+
+- PostgreSQL 17+
 
 ## Setup
 
@@ -91,39 +91,58 @@ dotnet ef database update --startup-project ../SL.Api
 
 ## API
 
-| Controller | Base route | Description |
-|---|---|---|
-| Setup | `/api/setup` | First-time setup — status and SuperAdmin creation |
-| Auth | `/api/auth` | Register, login, profile (`/me`) |
-| Groups | `/api/groups` | User groups, join requests, member approval |
-| Schedule | `/api/schedule` | Weekly slots, reservations, slot management |
-| Admin | `/api/admin` | User and group management (SuperAdmin) |
-| ActivityHub | `/hubs/activity` | SignalR — real-time events per group |
+| Controller  | Base route                     | Description                                       |
+| ----------- | ------------------------------ | ------------------------------------------------- |
+| Setup       | `/sch-lunch-api/setup`         | First-time setup — status and SuperAdmin creation |
+| Auth        | `/sch-lunch-api/auth`          | Register, login, profile (`/me`)                  |
+| Groups      | `/sch-lunch-api/groups`        | User groups, member approval and removal          |
+| Schedule    | `/sch-lunch-api/schedule`      | Weekly slots, reservations, slot management       |
+| Admin       | `/sch-lunch-api/admin`         | User and group management (SuperAdmin)            |
+| ActivityHub | `/sch-lunch-api/hubs/activity` | SignalR — real-time events per group              |
 
 ## Roles
 
-| Role | Permissions |
-|---|---|
-| `User` | View schedule, reserve/cancel slots |
-| `GroupAdmin` | Everything in User + create/delete slots, approve members |
-| `SuperAdmin` | Everything + global user and group management |
+| Role         | Permissions                                                      |
+| ------------ | ---------------------------------------------------------------- |
+| `User`       | View schedule, reserve/cancel slots                              |
+| `GroupAdmin` | Everything in User + create/delete slots, approve/reject members |
+| `SuperAdmin` | Everything + global user and group management, role assignment   |
 
-## First Run
+## First-Time Admin Setup
 
-The database starts empty — no users. When opening the app for the first time:
+The database starts empty — no users or groups exist. When opening the app for the first time:
 
-1. The frontend checks if any `SuperAdmin` exists (`GET /api/setup/status`)
+1. The frontend detects that no `SuperAdmin` exists (`GET /sch-lunch-api/setup/status`)
 2. Automatically redirects to `/setup`
-3. Fill in the administrator details
-4. The `SuperAdmin` is created and redirected to `/login`
+3. Fill in the SuperAdmin credentials (username, email, password)
+4. The account is created with `SuperAdmin` role, a default group is also created, and the page redirects to `/login`
 
-Once setup is complete, `/setup` is locked for everyone.
+Once setup is complete, `/setup` is blocked for all authenticated users.
+
+### After Setup
+
+Before inviting other users, the SuperAdmin should:
+
+1. **Verify or rename the default group** — go to `/admin/groups` and edit the group created during setup
+2. **Create lunch time slots** — go to `/admin/slots` and add the available time slots for the week
+3. **Invite or inform users** — share the app URL so they can register
 
 ## User Flow
 
-1. `SuperAdmin` creates groups from `/admin/groups`
-2. User registers → status `Pending`
-3. `GroupAdmin` approves from `/admin/users` → status `Approved`
-4. User logs in → JWT with `role` and `groupId`
-5. Reserves slots in the weekly schedule view
-6. Changes are reflected in real time via SignalR for all group members
+1. User registers → automatically placed in `Pending` status in the group
+2. `GroupAdmin` or `SuperAdmin` sees the pending request in real time on `/admin/users` (via SignalR) and approves or rejects it
+3. Approved user logs in → JWT includes `role` and `groupId`
+4. User views the weekly schedule and reserves available slots
+5. All group members see reservations and cancellations in real time via SignalR
+
+## Real-Time Events (SignalR)
+
+All events are scoped to the user's group channel (`group-{groupId}`):
+
+| Event                 | Triggered when                                       |
+| --------------------- | ---------------------------------------------------- |
+| `UserPendingApproval` | A new user registers and is placed in Pending status |
+| `UserReserved`        | A group member reserves a lunch slot                 |
+| `UserCancelled`       | A group member cancels a reservation                 |
+| `SlotCreated`         | An admin creates a new time slot                     |
+| `SlotDeleted`         | An admin deletes a time slot                         |

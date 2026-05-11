@@ -1,5 +1,6 @@
 'use client';
 import type { TimeSlotDto } from '@/lib/types';
+import { useTranslation } from '@/lib/i18n';
 import { SlotCell } from './SlotCell';
 
 interface Props {
@@ -7,8 +8,6 @@ interface Props {
   onToggle: (slot: TimeSlotDto) => void;
   loadingSlotId: string | null;
 }
-
-const DAYS = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie'];
 
 function getWeekDates(): string[] {
   const today = new Date();
@@ -23,19 +22,21 @@ function getWeekDates(): string[] {
 }
 
 export function WeeklyGrid({ slots, onToggle, loadingSlotId }: Props) {
+  const { t } = useTranslation();
   const weekDates = getWeekDates();
   const allLabels = [...new Set(slots.map(s => s.label))].sort();
+  const today = new Date().toISOString().split('T')[0];
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th className="w-24 text-left text-xs text-gray-500 pb-2">Horario</th>
+            <th className="w-24 text-left text-xs text-gray-500 pb-2">{t.scheduleHeader}</th>
             {weekDates.map((date, i) => (
               <th key={date} className="text-center text-xs text-gray-400 pb-2 px-1">
-                <div className={`rounded px-2 py-1 ${date === new Date().toISOString().split('T')[0] ? 'bg-indigo-900 text-indigo-300' : ''}`}>
-                  {DAYS[i]}<br />{date.slice(8)}
+                <div className={`rounded px-2 py-1 ${date === today ? 'bg-indigo-900 text-indigo-300' : ''}`}>
+                  {t.days[i]}<br />{date.slice(8)}
                 </div>
               </th>
             ))}
@@ -58,7 +59,7 @@ export function WeeklyGrid({ slots, onToggle, loadingSlotId }: Props) {
             </tr>
           ))}
           {allLabels.length === 0 && (
-            <tr><td colSpan={6} className="text-center text-gray-600 py-8">No hay slots esta semana.</td></tr>
+            <tr><td colSpan={6} className="text-center text-gray-600 py-8">{t.noSlotsThisWeek}</td></tr>
           )}
         </tbody>
       </table>
