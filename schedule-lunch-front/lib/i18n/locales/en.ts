@@ -65,6 +65,12 @@ export const en: Translations = {
   recentActivity: 'Recent activity',
   days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
 
+  // Mobile navigation
+  navMore: 'More',
+  reserveSlot: 'Reserve',
+  cancelSlot: 'Cancel reservation',
+  scheduleNav: 'Schedule',
+
   // Activity feed (dynamic)
   activityReserved: (userName, slotLabel, attendeeCount, capacity) =>
     `${userName} reserved ${slotLabel} (${attendeeCount}/${capacity})`,

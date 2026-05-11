@@ -65,6 +65,12 @@ export interface Translations {
   recentActivity: string;
   days: [string, string, string, string, string];
 
+  // Mobile navigation
+  navMore: string;
+  reserveSlot: string;
+  cancelSlot: string;
+  scheduleNav: string;
+
   // Activity feed (dynamic)
   activityReserved: (userName: string, slotLabel: string, attendeeCount: number, capacity: number) => string;
   activityCancelled: (userName: string, slotLabel: string, attendeeCount: number, capacity: number) => string;
