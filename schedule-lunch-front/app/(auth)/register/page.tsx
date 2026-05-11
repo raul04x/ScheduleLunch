@@ -1,10 +1,15 @@
 'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useTranslation } from '@/lib/i18n';
+import { AppLogo } from '@/components/AppLogo';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -35,29 +40,73 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl p-8 border border-gray-800">
-      <div className="flex justify-end mb-4">
-        <LanguageSwitcher />
+    <div className="min-h-screen flex">
+      {/* Left panel — always dark */}
+      <div
+        className="hidden md:flex md:w-2/5 flex-col items-center justify-center p-12"
+        style={{ background: '#0A1628' }}
+      >
+        <AppLogo size={64} withWordmark={false} />
+        <h1 className="mt-6 text-2xl font-bold text-white">ScheduleLunch</h1>
+        <p className="mt-2 text-sm" style={{ color: '#F0A825' }}>Reserve your table</p>
       </div>
-      <h1 className="text-2xl font-bold text-white mb-2">{t.registerTitle}</h1>
-      <p className="text-gray-400 text-sm mb-6">{t.registerSubtitle}</p>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input value={form.username} onChange={set('username')} placeholder={t.usernamePlaceholder} required
-          className="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-indigo-500" />
-        <input value={form.email} onChange={set('email')} placeholder={t.emailPlaceholder} type="email" required
-          className="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-indigo-500" />
-        <input value={form.password} onChange={set('password')} placeholder={t.passwordPlaceholder} type="password" required
-          className="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-indigo-500" />
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        <button type="submit" disabled={loading}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-medium disabled:opacity-50">
-          {loading ? t.registering : t.register}
-        </button>
-      </form>
-      <p className="text-gray-500 text-sm mt-4 text-center">
-        {t.hasAccount}{' '}
-        <Link href="/login" className="text-indigo-400 hover:underline">{t.loginLink}</Link>
-      </p>
+
+      {/* Right panel */}
+      <div className="flex-1 flex flex-col bg-[var(--color-bg)]">
+        <div className="flex justify-end p-4 gap-2">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
+
+        <div className="flex-1 flex items-center justify-center px-8">
+          <div className="w-full max-w-sm space-y-6">
+            <div className="md:hidden flex flex-col items-center mb-2">
+              <AppLogo size={40} withWordmark={false} />
+              <h1 className="mt-3 text-xl font-bold text-[var(--color-text)]">ScheduleLunch</h1>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-[var(--color-text)]">{t.registerTitle}</h2>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">{t.registerSubtitle}</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                type="text"
+                placeholder={t.usernamePlaceholder}
+                value={form.username}
+                onChange={set('username')}
+                required
+              />
+              <Input
+                type="email"
+                placeholder={t.emailPlaceholder}
+                value={form.email}
+                onChange={set('email')}
+                required
+              />
+              <Input
+                type="password"
+                placeholder={t.passwordPlaceholder}
+                value={form.password}
+                onChange={set('password')}
+                required
+              />
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? t.registering : t.register}
+              </Button>
+            </form>
+
+            <p className="text-center text-sm text-[var(--color-text-muted)]">
+              {t.hasAccount}{' '}
+              <Link href="/login" className="text-[var(--color-accent)] hover:underline">
+                {t.loginLink}
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
