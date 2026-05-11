@@ -1,26 +1,62 @@
 @import "tailwindcss";
 
+/* Tailwind v4: class-based dark mode */
+@variant dark (&:where(.dark, .dark *));
+
+/* ── Brand palette (from logo) ───────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand-navy:       #0A1628;
+  --brand-navy-mid:   #0F2040;
+  --brand-navy-light: #1D3A5E;
+  --brand-silver:     #C8D4E6;
+  --brand-gold:       #F0A825;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Semantic tokens — light theme ───────────────────── */
+:root {
+  --color-bg:         #f8fafc;
+  --color-bg-subtle:  #f1f5f9;
+  --color-surface:    #ffffff;
+  --color-border:     #e2e8f0;
+  --color-text:       #0A1628;
+  --color-text-muted: #64748b;
+  --color-brand:      #F0A825;
+  --color-accent:     #6366f1;
+  --color-accent-dim: rgba(99, 102, 241, 0.12);
+
+  --shadow-card:     0 4px 24px rgba(10,22,40,0.08), 0 1px 2px rgba(10,22,40,0.04);
+  --shadow-elevated: 0 8px 32px rgba(10,22,40,0.12);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Semantic tokens — dark theme ────────────────────── */
+.dark {
+  --color-bg:         #0A1628;
+  --color-bg-subtle:  #060d1a;
+  --color-surface:    #0F2040;
+  --color-border:     rgba(200, 212, 230, 0.10);
+  --color-text:       #f1f5f9;
+  --color-text-muted: #64748b;
+  --color-brand:      #F0A825;
+  --color-accent:     #6366f1;
+  --color-accent-dim: rgba(99, 102, 241, 0.12);
+
+  --shadow-card:     0 4px 24px rgba(0,0,0,0.4);
+  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.6);
 }
 
+/* ── Base ────────────────────────────────────────────── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Pulse animation for pending page ───────────────── */
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.animate-pulse-gold {
+  animation: pulse-gold 2s ease-in-out infinite;
 }
