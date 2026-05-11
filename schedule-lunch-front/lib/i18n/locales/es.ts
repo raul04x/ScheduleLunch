@@ -92,6 +92,17 @@ export const es: Translations = {
   allUsers: 'Todos los usuarios',
   emailCol: 'Email',
   roleCol: 'Rol',
+  groupCol: 'Grupo',
+  noGroup: 'Sin grupo',
+
+  // Admin — groups members
+  membersSection: 'Miembros',
+  noMembers: 'Sin miembros',
+  addMember: 'Añadir miembro',
+  selectUserPlaceholder: 'Seleccionar usuario...',
+  removeFromGroup: 'Quitar',
+  viewMembers: 'Ver miembros',
+  hideMembers: 'Ocultar',
 
   // Admin — slots
   slotManagement: 'Gestión de Slots',

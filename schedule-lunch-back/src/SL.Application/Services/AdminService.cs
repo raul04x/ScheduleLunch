@@ -49,4 +49,21 @@ public class AdminService(ScheduleDbContext db, IGroupRepository groupRepo) : IA
     }
 
     public Task DeleteGroupAsync(Guid id) => groupRepo.DeleteAsync(id);
+
+    public async Task AssignUserToGroupAsync(Guid userId, Guid groupId)
+    {
+        var existing = await db.GroupMemberships.FirstOrDefaultAsync(m => m.UserId == userId);
+        if (existing is not null)
+            db.GroupMemberships.Remove(existing);
+
+        db.GroupMemberships.Add(new GroupMembership
+        {
+            UserId = userId,
+            GroupId = groupId,
+            Status = MembershipStatus.Approved,
+            Role = MembershipRole.Member
+        });
+
+        await db.SaveChangesAsync();
+    }
 }

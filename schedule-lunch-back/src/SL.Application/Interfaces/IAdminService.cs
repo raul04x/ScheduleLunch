@@ -10,4 +10,5 @@ public interface IAdminService
     Task<IEnumerable<GroupDto>> GetAllGroupsAsync();
     Task<GroupDto> CreateGroupAsync(CreateGroupDto dto);
     Task DeleteGroupAsync(Guid id);
+    Task AssignUserToGroupAsync(Guid userId, Guid groupId);
 }

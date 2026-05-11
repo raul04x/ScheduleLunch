@@ -59,6 +59,8 @@ export const api = {
       request<import('./types').UserAdminDto[]>('/sch-lunch-api/admin/users', {}, token),
     updateRole: (userId: string, role: import('./types').UserRole, token: string) =>
       request<void>(`/sch-lunch-api/admin/users/${userId}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }, token),
+    assignGroup: (userId: string, groupId: string, token: string) =>
+      request<void>(`/sch-lunch-api/admin/users/${userId}/group`, { method: 'PATCH', body: JSON.stringify({ groupId }) }, token),
   },
   setup: {
     status: (): Promise<{ setupRequired: boolean }> =>

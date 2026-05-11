@@ -7,13 +7,19 @@ import { useTranslation } from '@/lib/i18n';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import type { GroupDto } from '@/lib/types';
+import type { GroupDto, MemberDto, UserAdminDto } from '@/lib/types';
 
 export default function AdminGroupsPage() {
   const [groups, setGroups] = useState<GroupDto[]>([]);
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+  const [membersMap, setMembersMap] = useState<Record<string, MemberDto[]>>({});
+  const [loadingGroupId, setLoadingGroupId] = useState<string | null>(null);
+  const [allUsers, setAllUsers] = useState<UserAdminDto[] | null>(null);
+  const [addingToGroup, setAddingToGroup] = useState<string | null>(null);
+  const [addUserId, setAddUserId] = useState('');
   const token = getToken() ?? '';
   const { t } = useTranslation();
 
@@ -30,7 +36,50 @@ export default function AdminGroupsPage() {
   async function remove(id: string) {
     await api.groups.delete(id, token);
     setGroups(prev => prev.filter(g => g.id !== id));
+    if (expandedGroupId === id) setExpandedGroupId(null);
   }
+
+  async function toggleMembers(groupId: string) {
+    if (expandedGroupId === groupId) {
+      setExpandedGroupId(null);
+      return;
+    }
+    setExpandedGroupId(groupId);
+    if (!membersMap[groupId]) {
+      setLoadingGroupId(groupId);
+      const members = await api.groups.getMembers(groupId, token);
+      setMembersMap(prev => ({ ...prev, [groupId]: members }));
+      setLoadingGroupId(null);
+    }
+  }
+
+  async function removeMember(userId: string, groupId: string) {
+    await api.groups.removeMember(userId, token);
+    setMembersMap(prev => ({
+      ...prev,
+      [groupId]: (prev[groupId] ?? []).filter(m => m.userId !== userId),
+    }));
+  }
+
+  async function openAddMember(groupId: string) {
+    setAddingToGroup(groupId);
+    setAddUserId('');
+    if (!allUsers) {
+      const users = await api.admin.getUsers(token);
+      setAllUsers(users);
+    }
+  }
+
+  async function confirmAddMember(groupId: string) {
+    if (!addUserId) return;
+    await api.admin.assignGroup(addUserId, groupId, token);
+    const members = await api.groups.getMembers(groupId, token);
+    setMembersMap(prev => ({ ...prev, [groupId]: members }));
+    setAddingToGroup(null);
+    setAddUserId('');
+  }
+
+  const selectClass = 'bg-[var(--color-bg-subtle)] text-[var(--color-text)] rounded-lg px-3 py-2 text-sm border border-[var(--color-border)] flex-1';
 
   return (
     <div className="max-w-xl">
@@ -45,15 +94,103 @@ export default function AdminGroupsPage() {
       </form>
 
       {/* Group list */}
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-3">
         {groups.map(g => (
           <li key={g.id}>
-            <Card className="p-3 flex items-center justify-between">
-              <div>
-                <p className="text-[var(--color-text)] text-sm font-medium">{g.name}</p>
-                {g.description && <p className="text-[var(--color-text-muted)] text-xs">{g.description}</p>}
+            <Card className="overflow-hidden">
+              {/* Group header */}
+              <div className="p-3 flex items-center justify-between">
+                <div>
+                  <p className="text-[var(--color-text)] text-sm font-medium">{g.name}</p>
+                  {g.description && <p className="text-[var(--color-text-muted)] text-xs mt-0.5">{g.description}</p>}
+                  {membersMap[g.id] && (
+                    <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">
+                      {membersMap[g.id].length} {t.membersSection.toLowerCase()}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleMembers(g.id)}
+                  >
+                    {expandedGroupId === g.id ? t.hideMembers : t.viewMembers}
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => remove(g.id)}>{t.deleteAction}</Button>
+                </div>
               </div>
-              <Button variant="danger" size="sm" onClick={() => remove(g.id)}>{t.deleteAction}</Button>
+
+              {/* Members section */}
+              {expandedGroupId === g.id && (
+                <div className="border-t border-[var(--color-border)] p-3 bg-[var(--color-bg-subtle)] space-y-2">
+                  <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                    {t.membersSection}
+                  </p>
+
+                  {loadingGroupId === g.id ? (
+                    <p className="text-xs text-[var(--color-text-muted)] py-2">...</p>
+                  ) : (
+                    <>
+                      {(membersMap[g.id] ?? []).length === 0 && (
+                        <p className="text-xs text-[var(--color-text-muted)] py-1">{t.noMembers}</p>
+                      )}
+                      {(membersMap[g.id] ?? []).map(m => (
+                        <div
+                          key={m.userId}
+                          className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-[var(--color-surface)]"
+                        >
+                          <div>
+                            <span className="text-sm text-[var(--color-text)] font-medium">{m.username}</span>
+                            {m.fullName && (
+                              <span className="text-xs text-[var(--color-text-muted)] ml-2">{m.fullName}</span>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeMember(m.userId, g.id)}
+                            className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            {t.removeFromGroup}
+                          </Button>
+                        </div>
+                      ))}
+
+                      {/* Add member */}
+                      {addingToGroup === g.id ? (
+                        <div className="flex items-center gap-2 pt-1">
+                          <select
+                            value={addUserId}
+                            onChange={e => setAddUserId(e.target.value)}
+                            className={selectClass}
+                          >
+                            <option value="">{t.selectUserPlaceholder}</option>
+                            {(allUsers ?? [])
+                              .filter(u => !(membersMap[g.id] ?? []).some(m => m.userId === u.id))
+                              .map(u => (
+                                <option key={u.id} value={u.id}>
+                                  {u.username}{u.fullName ? ` — ${u.fullName}` : ''}
+                                </option>
+                              ))}
+                          </select>
+                          <Button size="sm" onClick={() => confirmAddMember(g.id)} disabled={!addUserId}>
+                            {t.addMember}
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => setAddingToGroup(null)}>✕</Button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => openAddMember(g.id)}
+                          className="text-xs text-[var(--color-accent)] hover:underline mt-1 block"
+                        >
+                          + {t.addMember}
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
             </Card>
           </li>
         ))}

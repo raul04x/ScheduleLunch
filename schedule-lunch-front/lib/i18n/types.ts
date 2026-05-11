@@ -88,6 +88,17 @@ export interface Translations {
   allUsers: string;
   emailCol: string;
   roleCol: string;
+  groupCol: string;
+  noGroup: string;
+
+  // Admin — groups members
+  membersSection: string;
+  noMembers: string;
+  addMember: string;
+  selectUserPlaceholder: string;
+  removeFromGroup: string;
+  viewMembers: string;
+  hideMembers: string;
 
   // Admin — slots
   slotManagement: string;

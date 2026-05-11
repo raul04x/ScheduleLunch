@@ -21,6 +21,13 @@ public class AdminController(IAdminService adminService) : ControllerBase
         return Ok();
     }
 
+    [HttpPatch("users/{userId}/group")]
+    public async Task<IActionResult> AssignGroup(Guid userId, [FromBody] AssignGroupDto dto)
+    {
+        await adminService.AssignUserToGroupAsync(userId, dto.GroupId);
+        return NoContent();
+    }
+
     [HttpGet("groups")]
     public async Task<IActionResult> GetGroups() =>
         Ok(await adminService.GetAllGroupsAsync());

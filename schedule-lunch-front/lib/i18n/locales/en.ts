@@ -92,6 +92,17 @@ export const en: Translations = {
   allUsers: 'All Users',
   emailCol: 'Email',
   roleCol: 'Role',
+  groupCol: 'Group',
+  noGroup: 'No group',
+
+  // Admin — groups members
+  membersSection: 'Members',
+  noMembers: 'No members',
+  addMember: 'Add member',
+  selectUserPlaceholder: 'Select user...',
+  removeFromGroup: 'Remove',
+  viewMembers: 'View members',
+  hideMembers: 'Hide',
 
   // Admin — slots
   slotManagement: 'Slot Management',

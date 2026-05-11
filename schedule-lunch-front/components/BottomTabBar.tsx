@@ -26,8 +26,8 @@ export function BottomTabBar({ isAdmin = false }: Props) {
   ];
 
   const handleSignOut = () => {
-    document.cookie = 'token=; path=/; max-age=0';
-    localStorage.removeItem('token');
+    document.cookie = 'sl_token=; path=/; max-age=0';
+    localStorage.removeItem('sl_token');
     router.push('/login');
   };
 

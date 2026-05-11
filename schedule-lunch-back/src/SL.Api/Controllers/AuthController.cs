@@ -32,7 +32,7 @@ public class AuthController(ScheduleDbContext db, TokenService tokenService, IHu
         db.Users.Add(user);
         await db.SaveChangesAsync();
 
-        var group = await db.Groups.FirstOrDefaultAsync();
+        var group = await db.Groups.OrderBy(g => g.CreatedAt).FirstOrDefaultAsync();
         if (group is not null)
         {
             db.GroupMemberships.Add(new GroupMembership
