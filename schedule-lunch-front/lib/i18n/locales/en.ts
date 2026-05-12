@@ -132,6 +132,18 @@ export const en: Translations = {
   groupDescFieldPlaceholder: 'Description (optional)',
   createGroup: 'Create group',
 
+  // Success toasts
+  toastSlotCreated: 'Slot created',
+  toastGroupCreated: 'Group created',
+  toastUserApproved: 'User approved',
+
+  // Common actions
+  cancel: 'Cancel',
+  confirmDeleteTitle: 'Are you sure?',
+  confirmDeleteMessage: 'This action cannot be undone.',
+  timeRangeError: 'End time must be after start time.',
+  errorGeneric: 'Something went wrong. Please try again.',
+
   // Profile
   navProfile: 'Profile',
   profileTitle: 'My profile',

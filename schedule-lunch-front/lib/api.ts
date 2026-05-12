@@ -35,8 +35,9 @@ export const api = {
       }, token),
   },
   schedule: {
-    getWeek: (token: string) =>
-      request<import('./types').TimeSlotDto[]>('/sch-lunch-api/schedule/week', {}, token),
+    getWeek: (token: string, date?: string) =>
+      request<import('./types').TimeSlotDto[]>(
+        `/sch-lunch-api/schedule/week${date ? `?date=${date}` : ''}`, {}, token),
     reserve: (slotId: string, token: string) =>
       request<import('./types').TimeSlotDto>(`/sch-lunch-api/schedule/${slotId}/reserve`, { method: 'POST' }, token),
     cancel: (slotId: string, token: string) =>

@@ -128,6 +128,18 @@ export interface Translations {
   groupDescFieldPlaceholder: string;
   createGroup: string;
 
+  // Success toasts
+  toastSlotCreated: string;
+  toastGroupCreated: string;
+  toastUserApproved: string;
+
+  // Common actions
+  cancel: string;
+  confirmDeleteTitle: string;
+  confirmDeleteMessage: string;
+  timeRangeError: string;
+  errorGeneric: string;
+
   // Profile
   navProfile: string;
   profileTitle: string;

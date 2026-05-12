@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { startConnection } from '@/lib/signalr';
@@ -8,49 +8,89 @@ import { useTranslation } from '@/lib/i18n';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Toast } from '@/components/ui/Toast';
 import type { UserAdminDto, UserRole, GroupDto } from '@/lib/types';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserAdminDto[]>([]);
   const [groups, setGroups] = useState<GroupDto[]>([]);
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [rejectingUser, setRejectingUser] = useState<UserAdminDto | null>(null);
+  const [error, setError] = useState('');
+  const [toast, setToast] = useState('');
   const token = getToken() ?? '';
   const { t } = useTranslation();
 
-  useEffect(() => {
-    api.admin.getUsers(token).then(setUsers);
-    api.groups.getAll(token).then(setGroups);
-  }, [token]);
+  const loadData = useCallback(async () => {
+    try {
+      const [u, g] = await Promise.all([api.admin.getUsers(token), api.groups.getAll(token)]);
+      setUsers(u);
+      setGroups(g);
+    } catch {
+      setError(t.errorGeneric);
+    }
+  }, [token, t]);
+
+  useEffect(() => { loadData(); }, [loadData]);
 
   useEffect(() => {
     if (!token) return;
     let conn: Awaited<ReturnType<typeof startConnection>>;
-
     startConnection(token).then(c => {
       conn = c;
       conn.on('UserPendingApproval', (user: UserAdminDto) => {
         setUsers(prev => prev.some(u => u.id === user.id) ? prev : [...prev, user]);
       });
     });
-
     return () => { conn?.off('UserPendingApproval'); };
   }, [token]);
 
   const pending = users.filter(u => u.membershipStatus === 'Pending');
 
-  async function approveMember(user: UserAdminDto) {
-    await api.groups.approveMember(user.id, token);
-    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, membershipStatus: 'Approved' } : u));
+  function setUserPending(id: string, on: boolean) {
+    setPendingIds(prev => {
+      const next = new Set(prev);
+      on ? next.add(id) : next.delete(id);
+      return next;
+    });
   }
 
-  async function rejectMember(user: UserAdminDto) {
-    await api.groups.removeMember(user.id, token);
-    setUsers(prev => prev.filter(u => u.id !== user.id));
+  async function approveMember(user: UserAdminDto) {
+    setUserPending(user.id, true);
+    try {
+      await api.groups.approveMember(user.id, token);
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, membershipStatus: 'Approved' } : u));
+      setToast(t.toastUserApproved);
+    } catch {
+      setError(t.errorGeneric);
+    } finally {
+      setUserPending(user.id, false);
+    }
+  }
+
+  async function confirmReject() {
+    if (!rejectingUser) return;
+    setUserPending(rejectingUser.id, true);
+    try {
+      await api.groups.removeMember(rejectingUser.id, token);
+      setUsers(prev => prev.filter(u => u.id !== rejectingUser.id));
+    } catch {
+      setError(t.errorGeneric);
+    } finally {
+      setUserPending(rejectingUser.id, false);
+      setRejectingUser(null);
+    }
   }
 
   async function updateRole(userId: string, role: UserRole) {
-    await api.admin.updateRole(userId, role, token);
-    setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
+    try {
+      await api.admin.updateRole(userId, role, token);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
+    } catch {
+      setError(t.errorGeneric);
+    }
   }
 
   async function assignGroup(userId: string, groupId: string) {
@@ -61,6 +101,8 @@ export default function AdminUsersPage() {
       setUsers(prev => prev.map(u => u.id === userId
         ? { ...u, groupId, membershipStatus: 'Approved' }
         : u));
+    } catch {
+      setError(t.errorGeneric);
     } finally {
       setAssigningId(null);
     }
@@ -73,13 +115,13 @@ export default function AdminUsersPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      {error && <p className="text-sm text-red-500">{error}</p>}
+
       {/* Pending approvals */}
       <section>
         <h2 className="text-base font-semibold text-[var(--color-text)] mb-4 flex items-center gap-2">
           {t.pendingApprovals}
-          {pending.length > 0 && (
-            <Badge variant="accent">{pending.length}</Badge>
-          )}
+          {pending.length > 0 && <Badge variant="accent">{pending.length}</Badge>}
         </h2>
 
         {pending.length === 0 ? (
@@ -104,8 +146,12 @@ export default function AdminUsersPage() {
                       <td className="py-3 text-[var(--color-text-muted)]">{u.fullName}</td>
                       <td className="py-3 text-[var(--color-text-muted)] text-xs">{groupName(u.groupId)}</td>
                       <td className="py-3 flex gap-2">
-                        <Button size="sm" onClick={() => approveMember(u)}>{t.approve}</Button>
-                        <Button size="sm" variant="danger" onClick={() => rejectMember(u)}>{t.reject}</Button>
+                        <Button size="sm" disabled={pendingIds.has(u.id)} onClick={() => approveMember(u)}>
+                          {t.approve}
+                        </Button>
+                        <Button size="sm" variant="danger" disabled={pendingIds.has(u.id)} onClick={() => setRejectingUser(u)}>
+                          {t.reject}
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -131,10 +177,10 @@ export default function AdminUsersPage() {
                     <Badge variant="gold">{t.statusPending}</Badge>
                   </div>
                   <div className="flex gap-2 mt-3">
-                    <Button variant="primary" size="sm" className="flex-1" onClick={() => approveMember(u)}>
+                    <Button variant="primary" size="sm" className="flex-1" disabled={pendingIds.has(u.id)} onClick={() => approveMember(u)}>
                       {t.approve}
                     </Button>
-                    <Button variant="danger" size="sm" className="flex-1" onClick={() => rejectMember(u)}>
+                    <Button variant="danger" size="sm" className="flex-1" disabled={pendingIds.has(u.id)} onClick={() => setRejectingUser(u)}>
                       {t.reject}
                     </Button>
                   </div>
@@ -171,6 +217,7 @@ export default function AdminUsersPage() {
                       value={u.role}
                       onChange={e => updateRole(u.id, e.target.value as UserRole)}
                       className="bg-[var(--color-bg-subtle)] text-[var(--color-text)] rounded px-2 py-1 text-xs border border-[var(--color-border)]"
+                      aria-label={t.roleCol}
                     >
                       <option value="User">User</option>
                       <option value="GroupAdmin">GroupAdmin</option>
@@ -183,11 +230,10 @@ export default function AdminUsersPage() {
                       disabled={assigningId === u.id}
                       onChange={e => assignGroup(u.id, e.target.value)}
                       className="bg-[var(--color-bg-subtle)] text-[var(--color-text)] rounded px-2 py-1 text-xs border border-[var(--color-border)] disabled:opacity-50 max-w-[140px]"
+                      aria-label={t.groupCol}
                     >
                       <option value="">{t.noGroup}</option>
-                      {groups.map(g => (
-                        <option key={g.id} value={g.id}>{g.name}</option>
-                      ))}
+                      {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                     </select>
                   </td>
                 </tr>
@@ -196,6 +242,15 @@ export default function AdminUsersPage() {
           </table>
         </div>
       </section>
+
+      <ConfirmDialog
+        open={rejectingUser !== null}
+        onConfirm={confirmReject}
+        onCancel={() => setRejectingUser(null)}
+        confirmLabel={t.reject}
+      />
+
+      {toast && <Toast message={toast} onDone={() => setToast('')} />}
     </div>
   );
 }

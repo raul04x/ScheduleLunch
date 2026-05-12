@@ -6,31 +6,30 @@ import { getToken } from '@/lib/auth';
 import { startConnection } from '@/lib/signalr';
 import { useTranslation } from '@/lib/i18n';
 import { WeeklyGrid } from '@/components/schedule/WeeklyGrid';
-import { DayView } from '@/components/schedule/DayView';
 import { ActivityFeed } from '@/components/schedule/ActivityFeed';
+import { getMondayOf } from '@/lib/weekDates';
 import type { TimeSlotDto, ActivityEvent } from '@/lib/types';
 
 export default function SchedulePage() {
+  const [monday, setMonday] = useState(() => getMondayOf(new Date()));
   const [slots, setSlots] = useState<TimeSlotDto[]>([]);
   const [activity, setActivity] = useState<ActivityEvent[]>([]);
   const [loadingSlotId, setLoadingSlotId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const { t } = useTranslation();
-
   const token = getToken() ?? '';
 
-  const fetchSlots = useCallback(async () => {
+  const fetchSlots = useCallback(async (ref: Date) => {
     try {
-      const data = await api.schedule.getWeek(token);
+      const date = ref.toISOString().slice(0, 10);
+      const data = await api.schedule.getWeek(token, date);
       setSlots(data);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t.errorLoadingSlots);
+    } catch {
+      setError(t.errorLoadingSlots);
     }
   }, [token, t]);
 
-  useEffect(() => {
-    fetchSlots();
-  }, [fetchSlots]);
+  useEffect(() => { fetchSlots(monday); }, [monday, fetchSlots]);
 
   useEffect(() => {
     if (!token) return;
@@ -40,7 +39,7 @@ export default function SchedulePage() {
       conn = c;
       const addEvent = (type: ActivityEvent['type']) => (data: Omit<ActivityEvent, 'type'>) => {
         setActivity(prev => [{ ...data, type }, ...prev].slice(0, 20));
-        fetchSlots();
+        fetchSlots(monday);
       };
       conn.on('UserReserved', addEvent('UserReserved'));
       conn.on('UserCancelled', addEvent('UserCancelled'));
@@ -54,48 +53,46 @@ export default function SchedulePage() {
       conn?.off('SlotCreated');
       conn?.off('SlotDeleted');
     };
-  }, [token, fetchSlots]);
+  }, [token, monday, fetchSlots]);
 
   async function handleToggle(slot: TimeSlotDto) {
     setLoadingSlotId(slot.id);
     try {
-      if (slot.isReservedByCurrentUser) {
-        const updated = await api.schedule.cancel(slot.id, token);
-        setSlots(prev => prev.map(s => s.id === updated.id ? updated : s));
-      } else {
-        const updated = await api.schedule.reserve(slot.id, token);
-        setSlots(prev => prev.map(s => s.id === updated.id ? updated : s));
-      }
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t.errorUpdatingSlot);
+      const updated = slot.isReservedByCurrentUser
+        ? await api.schedule.cancel(slot.id, token)
+        : await api.schedule.reserve(slot.id, token);
+      setSlots(prev => prev.map(s => s.id === updated.id ? updated : s));
+    } catch {
+      setError(t.errorUpdatingSlot);
     } finally {
       setLoadingSlotId(null);
     }
   }
 
+  function shiftWeek(delta: number) {
+    setMonday(prev => {
+      const next = new Date(prev);
+      next.setDate(prev.getDate() + delta * 7);
+      return next;
+    });
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold text-[var(--color-text)] mb-6 hidden md:block">
-        {t.currentWeek}
-      </h1>
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
-      {/* Desktop: weekly grid */}
-      <div className="hidden md:block">
-        <WeeklyGrid slots={slots} onToggle={handleToggle} loadingSlotId={loadingSlotId} />
-        <div className="mt-8 bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
-          <h2 className="text-sm font-medium text-[var(--color-text-muted)] mb-3">{t.recentActivity}</h2>
-          <ActivityFeed events={activity} />
-        </div>
-      </div>
+      <WeeklyGrid
+        slots={slots}
+        onToggle={handleToggle}
+        loadingSlotId={loadingSlotId}
+        monday={monday}
+        onPrevWeek={() => shiftWeek(-1)}
+        onNextWeek={() => shiftWeek(1)}
+      />
 
-      {/* Mobile: day view */}
-      <div className="md:hidden">
-        <DayView slots={slots} onToggle={handleToggle} loadingSlotId={loadingSlotId} />
-        <div className="mt-6 bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
-          <h2 className="text-sm font-medium text-[var(--color-text-muted)] mb-3">{t.recentActivity}</h2>
-          <ActivityFeed events={activity} />
-        </div>
+      <div className="mt-8 bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
+        <h2 className="text-sm font-medium text-[var(--color-text-muted)] mb-3">{t.recentActivity}</h2>
+        <ActivityFeed events={activity} />
       </div>
     </div>
   );

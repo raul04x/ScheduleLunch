@@ -22,9 +22,9 @@ public class ScheduleController(IScheduleService scheduleService, IHubContext<Ac
         CurrentGroupId ?? (await membershipRepo.GetApprovedByUserIdAsync(CurrentUserId))?.GroupId;
 
     [HttpGet("week")]
-    public async Task<IActionResult> GetWeek() =>
+    public async Task<IActionResult> GetWeek([FromQuery] DateOnly? date = null) =>
         await ResolveGroupIdAsync() is not { } gid ? Forbid() :
-        Ok(await scheduleService.GetWeekSlotsAsync(gid, CurrentUserId));
+        Ok(await scheduleService.GetWeekSlotsAsync(gid, CurrentUserId, date));
 
     [HttpGet("day")]
     public async Task<IActionResult> GetDay([FromQuery] DateOnly date) =>

@@ -7,9 +7,9 @@ namespace SL.Application.Services;
 
 public class ScheduleService(ITimeSlotRepository slotRepo, IAttendanceRepository attendanceRepo) : IScheduleService
 {
-    public async Task<IEnumerable<TimeSlotDto>> GetWeekSlotsAsync(Guid groupId, Guid currentUserId)
+    public async Task<IEnumerable<TimeSlotDto>> GetWeekSlotsAsync(Guid groupId, Guid currentUserId, DateOnly? referenceDate = null)
     {
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var today = referenceDate ?? DateOnly.FromDateTime(DateTime.Now);
         var dow = (int)today.DayOfWeek;
         var monday = today.AddDays(dow == 0 ? -6 : -(dow - 1));
         var friday = monday.AddDays(4);

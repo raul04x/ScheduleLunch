@@ -132,6 +132,18 @@ export const es: Translations = {
   groupDescFieldPlaceholder: 'Descripción (opcional)',
   createGroup: 'Crear grupo',
 
+  // Success toasts
+  toastSlotCreated: 'Slot creado',
+  toastGroupCreated: 'Grupo creado',
+  toastUserApproved: 'Usuario aprobado',
+
+  // Common actions
+  cancel: 'Cancelar',
+  confirmDeleteTitle: '¿Estás seguro?',
+  confirmDeleteMessage: 'Esta acción no se puede deshacer.',
+  timeRangeError: 'La hora de fin debe ser posterior a la de inicio.',
+  errorGeneric: 'Algo salió mal. Inténtalo de nuevo.',
+
   // Profile
   navProfile: 'Perfil',
   profileTitle: 'Mi perfil',

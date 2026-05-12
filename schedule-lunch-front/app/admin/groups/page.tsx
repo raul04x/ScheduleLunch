@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Toast } from '@/components/ui/Toast';
 import type { GroupDto, MemberDto, UserAdminDto } from '@/lib/types';
 
 export default function AdminGroupsPage() {
@@ -20,63 +22,101 @@ export default function AdminGroupsPage() {
   const [allUsers, setAllUsers] = useState<UserAdminDto[] | null>(null);
   const [addingToGroup, setAddingToGroup] = useState<string | null>(null);
   const [addUserId, setAddUserId] = useState('');
+  const [error, setError] = useState('');
+  const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null);
+  const [toast, setToast] = useState('');
   const token = getToken() ?? '';
   const { t } = useTranslation();
 
-  useEffect(() => { api.groups.getAll(token).then(setGroups); }, [token]);
+  const loadGroups = useCallback(async () => {
+    try {
+      const data = await api.groups.getAll(token);
+      setGroups(data);
+    } catch {
+      setError(t.errorGeneric);
+    }
+  }, [token, t]);
 
-  async function create(e: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => { loadGroups(); }, [loadGroups]);
+
+  async function create(e: React.FormEvent) {
     e.preventDefault();
-    const g = await api.groups.create(name, desc || null, token);
-    setGroups(prev => [...prev, g]);
-    setName(''); setDesc('');
-    setSheetOpen(false);
+    try {
+      const g = await api.groups.create(name, desc || null, token);
+      setGroups(prev => [...prev, g]);
+      setName(''); setDesc('');
+      setSheetOpen(false);
+      setToast(t.toastGroupCreated);
+    } catch {
+      setError(t.errorGeneric);
+    }
   }
 
-  async function remove(id: string) {
-    await api.groups.delete(id, token);
-    setGroups(prev => prev.filter(g => g.id !== id));
-    if (expandedGroupId === id) setExpandedGroupId(null);
+  async function confirmDelete() {
+    if (!deletingGroupId) return;
+    try {
+      await api.groups.delete(deletingGroupId, token);
+      setGroups(prev => prev.filter(g => g.id !== deletingGroupId));
+      if (expandedGroupId === deletingGroupId) setExpandedGroupId(null);
+    } catch {
+      setError(t.errorGeneric);
+    } finally {
+      setDeletingGroupId(null);
+    }
   }
 
   async function toggleMembers(groupId: string) {
-    if (expandedGroupId === groupId) {
-      setExpandedGroupId(null);
-      return;
-    }
+    if (expandedGroupId === groupId) { setExpandedGroupId(null); return; }
     setExpandedGroupId(groupId);
     if (!membersMap[groupId]) {
       setLoadingGroupId(groupId);
-      const members = await api.groups.getMembers(groupId, token);
-      setMembersMap(prev => ({ ...prev, [groupId]: members }));
-      setLoadingGroupId(null);
+      try {
+        const members = await api.groups.getMembers(groupId, token);
+        setMembersMap(prev => ({ ...prev, [groupId]: members }));
+      } catch {
+        setError(t.errorGeneric);
+      } finally {
+        setLoadingGroupId(null);
+      }
     }
   }
 
   async function removeMember(userId: string, groupId: string) {
-    await api.groups.removeMember(userId, token);
-    setMembersMap(prev => ({
-      ...prev,
-      [groupId]: (prev[groupId] ?? []).filter(m => m.userId !== userId),
-    }));
+    try {
+      await api.groups.removeMember(userId, token);
+      setMembersMap(prev => ({
+        ...prev,
+        [groupId]: (prev[groupId] ?? []).filter(m => m.userId !== userId),
+      }));
+    } catch {
+      setError(t.errorGeneric);
+    }
   }
 
   async function openAddMember(groupId: string) {
     setAddingToGroup(groupId);
     setAddUserId('');
     if (!allUsers) {
-      const users = await api.admin.getUsers(token);
-      setAllUsers(users);
+      try {
+        const users = await api.admin.getUsers(token);
+        setAllUsers(users);
+      } catch {
+        setError(t.errorGeneric);
+      }
     }
   }
 
   async function confirmAddMember(groupId: string) {
     if (!addUserId) return;
-    await api.admin.assignGroup(addUserId, groupId, token);
-    const members = await api.groups.getMembers(groupId, token);
-    setMembersMap(prev => ({ ...prev, [groupId]: members }));
-    setAddingToGroup(null);
-    setAddUserId('');
+    try {
+      await api.admin.assignGroup(addUserId, groupId, token);
+      const members = await api.groups.getMembers(groupId, token);
+      setMembersMap(prev => ({ ...prev, [groupId]: members }));
+      setAddingToGroup(null);
+      setAddUserId('');
+    } catch {
+      setError(t.errorGeneric);
+    }
   }
 
   const selectClass = 'bg-[var(--color-bg-subtle)] text-[var(--color-text)] rounded-lg px-3 py-2 text-sm border border-[var(--color-border)] flex-1';
@@ -84,6 +124,8 @@ export default function AdminGroupsPage() {
   return (
     <div className="max-w-xl">
       <h1 className="text-xl font-bold text-[var(--color-text)] mb-6">{t.groupsTitle}</h1>
+
+      {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
 
       {/* Desktop: inline form */}
       <form onSubmit={create} className="hidden md:flex flex-col gap-3 mb-8 bg-[var(--color-surface)] p-4 rounded-xl border border-[var(--color-border)]">
@@ -98,7 +140,6 @@ export default function AdminGroupsPage() {
         {groups.map(g => (
           <li key={g.id}>
             <Card className="overflow-hidden">
-              {/* Group header */}
               <div className="p-3 flex items-center justify-between">
                 <div>
                   <p className="text-[var(--color-text)] text-sm font-medium">{g.name}</p>
@@ -110,24 +151,20 @@ export default function AdminGroupsPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleMembers(g.id)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => toggleMembers(g.id)}>
                     {expandedGroupId === g.id ? t.hideMembers : t.viewMembers}
                   </Button>
-                  <Button variant="danger" size="sm" onClick={() => remove(g.id)}>{t.deleteAction}</Button>
+                  <Button variant="danger" size="sm" onClick={() => setDeletingGroupId(g.id)}>
+                    {t.deleteAction}
+                  </Button>
                 </div>
               </div>
 
-              {/* Members section */}
               {expandedGroupId === g.id && (
                 <div className="border-t border-[var(--color-border)] p-3 bg-[var(--color-bg-subtle)] space-y-2">
                   <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                     {t.membersSection}
                   </p>
-
                   {loadingGroupId === g.id ? (
                     <p className="text-xs text-[var(--color-text-muted)] py-2">...</p>
                   ) : (
@@ -136,19 +173,13 @@ export default function AdminGroupsPage() {
                         <p className="text-xs text-[var(--color-text-muted)] py-1">{t.noMembers}</p>
                       )}
                       {(membersMap[g.id] ?? []).map(m => (
-                        <div
-                          key={m.userId}
-                          className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-[var(--color-surface)]"
-                        >
+                        <div key={m.userId} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-[var(--color-surface)]">
                           <div>
                             <span className="text-sm text-[var(--color-text)] font-medium">{m.username}</span>
-                            {m.fullName && (
-                              <span className="text-xs text-[var(--color-text-muted)] ml-2">{m.fullName}</span>
-                            )}
+                            {m.fullName && <span className="text-xs text-[var(--color-text-muted)] ml-2">{m.fullName}</span>}
                           </div>
                           <Button
-                            variant="ghost"
-                            size="sm"
+                            variant="ghost" size="sm"
                             onClick={() => removeMember(m.userId, g.id)}
                             className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                           >
@@ -157,14 +188,9 @@ export default function AdminGroupsPage() {
                         </div>
                       ))}
 
-                      {/* Add member */}
                       {addingToGroup === g.id ? (
                         <div className="flex items-center gap-2 pt-1">
-                          <select
-                            value={addUserId}
-                            onChange={e => setAddUserId(e.target.value)}
-                            className={selectClass}
-                          >
+                          <select value={addUserId} onChange={e => setAddUserId(e.target.value)} className={selectClass}>
                             <option value="">{t.selectUserPlaceholder}</option>
                             {(allUsers ?? [])
                               .filter(u => !(membersMap[g.id] ?? []).some(m => m.userId === u.id))
@@ -222,6 +248,14 @@ export default function AdminGroupsPage() {
           </form>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deletingGroupId !== null}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeletingGroupId(null)}
+      />
+
+      {toast && <Toast message={toast} onDone={() => setToast('')} />}
     </div>
   );
 }

@@ -6,23 +6,12 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import type { TimeSlotDto } from '@/lib/types';
+import { getWeekDates, getTodayDate } from '@/lib/weekDates';
 
 interface Props {
   slots: TimeSlotDto[];
   onToggle: (slot: TimeSlotDto) => void;
   loadingSlotId: string | null;
-}
-
-function getWeekDates(): string[] {
-  const today = new Date();
-  const day = today.getDay();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
-  return Array.from({ length: 5 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d.toISOString().slice(0, 10);
-  });
 }
 
 function formatDate(iso: string, locale: string): string {
@@ -37,7 +26,7 @@ function formatDate(iso: string, locale: string): string {
 export function DayView({ slots, onToggle, loadingSlotId }: Props) {
   const { t, locale } = useTranslation();
   const weekDates = getWeekDates();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayDate();
 
   const todayIndex = weekDates.indexOf(today);
   const [dayIndex, setDayIndex] = useState(todayIndex >= 0 ? todayIndex : 0);
@@ -52,6 +41,7 @@ export function DayView({ slots, onToggle, loadingSlotId }: Props) {
         <button
           onClick={() => setDayIndex(i => Math.max(0, i - 1))}
           disabled={dayIndex === 0}
+          aria-label={t.days[Math.max(0, dayIndex - 1)]}
           className="p-2 rounded-lg disabled:opacity-30 text-[var(--color-text-muted)] hover:bg-[var(--color-accent-dim)] text-xl leading-none"
         >
           ‹
@@ -71,6 +61,7 @@ export function DayView({ slots, onToggle, loadingSlotId }: Props) {
         <button
           onClick={() => setDayIndex(i => Math.min(weekDates.length - 1, i + 1))}
           disabled={dayIndex === weekDates.length - 1}
+          aria-label={t.days[Math.min(weekDates.length - 1, dayIndex + 1)]}
           className="p-2 rounded-lg disabled:opacity-30 text-[var(--color-text-muted)] hover:bg-[var(--color-accent-dim)] text-xl leading-none"
         >
           ›
