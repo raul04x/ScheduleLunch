@@ -128,6 +128,15 @@ export interface Translations {
   groupDescFieldPlaceholder: string;
   createGroup: string;
 
+  // Profile
+  navProfile: string;
+  profileTitle: string;
+  accountSection: string;
+  saveChanges: string;
+  savingProfile: string;
+  profileSaved: string;
+  profileSaveError: string;
+
   // Password strength
   passwordStrengthWeak: string;
   passwordStrengthFair: string;

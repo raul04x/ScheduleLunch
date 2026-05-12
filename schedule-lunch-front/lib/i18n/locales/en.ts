@@ -105,6 +105,7 @@ export const en: Translations = {
   roleCol: 'Role',
   groupCol: 'Group',
   noGroup: 'No group',
+  statusPending: 'Pending',
 
   // Admin — groups members
   membersSection: 'Members',
@@ -122,6 +123,7 @@ export const en: Translations = {
   createSlot: 'Create slot',
   deleteAction: 'Delete',
   reservationsLabel: 'reservations',
+  capacityAbbr: 'cap.',
 
   // Admin — groups
   groupsTitle: 'Groups',
@@ -129,6 +131,15 @@ export const en: Translations = {
   groupNameFieldPlaceholder: 'Name',
   groupDescFieldPlaceholder: 'Description (optional)',
   createGroup: 'Create group',
+
+  // Profile
+  navProfile: 'Profile',
+  profileTitle: 'My profile',
+  accountSection: 'Account',
+  saveChanges: 'Save changes',
+  savingProfile: 'Saving...',
+  profileSaved: 'Profile saved',
+  profileSaveError: 'Error saving profile',
 
   // Password strength
   passwordStrengthWeak: 'Weak',

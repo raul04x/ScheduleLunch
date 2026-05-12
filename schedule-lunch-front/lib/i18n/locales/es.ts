@@ -132,6 +132,15 @@ export const es: Translations = {
   groupDescFieldPlaceholder: 'Descripción (opcional)',
   createGroup: 'Crear grupo',
 
+  // Profile
+  navProfile: 'Perfil',
+  profileTitle: 'Mi perfil',
+  accountSection: 'Cuenta',
+  saveChanges: 'Guardar cambios',
+  savingProfile: 'Guardando...',
+  profileSaved: 'Perfil guardado',
+  profileSaveError: 'Error al guardar el perfil',
+
   // Password strength
   passwordStrengthWeak: 'Débil',
   passwordStrengthFair: 'Regular',

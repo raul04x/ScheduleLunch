@@ -31,6 +31,12 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
           <ThemeToggle />
+          <Link
+            href="/profile"
+            className="px-3 py-1.5 text-sm rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-accent-dim)] hover:text-[var(--color-accent)] transition-colors"
+          >
+            {t.navProfile}
+          </Link>
           {isAdmin && (
             <Link
               href="/admin/users"

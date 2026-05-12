@@ -70,6 +70,14 @@ export function BottomTabBar({ isAdmin = false }: Props) {
           >
             <div className="w-10 h-1 bg-[var(--color-border)] rounded-full mx-auto mb-4" />
 
+            <button
+              onClick={() => { router.push('/profile'); setMoreOpen(false); }}
+              className="flex items-center gap-3 py-3 w-full text-[var(--color-text)]"
+            >
+              <span>👤</span>
+              <span className="font-medium">{t.navProfile}</span>
+            </button>
+
             {isAdmin && (
               <button
                 onClick={() => { router.push('/admin/groups'); setMoreOpen(false); }}

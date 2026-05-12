@@ -15,7 +15,7 @@ import { PasswordStrength } from '@/components/ui/PasswordStrength';
 export default function RegisterPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  const [form, setForm] = useState({ username: '', email: '', password: '', confirm: '' });
+  const [form, setForm] = useState({ firstName: '', lastName: '', username: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +33,7 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      const res = await api.auth.register(form.username, form.email, form.password);
+      const res = await api.auth.register(form.username, form.email, form.password, form.firstName, form.lastName);
       document.cookie = `sl_token=${res.token}; path=/; SameSite=Strict`;
       localStorage.setItem('sl_token', res.token);
       router.push('/pending');
@@ -76,6 +76,20 @@ export default function RegisterPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex gap-3">
+                <Input
+                  placeholder={t.firstNamePlaceholder}
+                  value={form.firstName}
+                  onChange={set('firstName')}
+                  required
+                />
+                <Input
+                  placeholder={t.lastNamePlaceholder}
+                  value={form.lastName}
+                  onChange={set('lastName')}
+                  required
+                />
+              </div>
               <Input
                 type="text"
                 placeholder={t.usernamePlaceholder}

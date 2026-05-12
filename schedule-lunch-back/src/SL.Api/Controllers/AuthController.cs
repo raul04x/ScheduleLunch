@@ -26,7 +26,9 @@ public class AuthController(ScheduleDbContext db, TokenService tokenService, IHu
         {
             Username = dto.Username,
             Email = dto.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+            FirstName = dto.FirstName,
+            LastName = dto.LastName
         };
 
         db.Users.Add(user);
@@ -73,6 +75,19 @@ public class AuthController(ScheduleDbContext db, TokenService tokenService, IHu
         var token = tokenService.CreateToken(user, membership?.GroupId);
 
         return Ok(new AuthResponseDto(user.Id, user.Username, token));
+    }
+
+    [Authorize]
+    [HttpPatch("profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user = await db.Users.FindAsync(userId);
+        if (user is null) return NotFound();
+        user.FirstName = dto.FirstName;
+        user.LastName = dto.LastName;
+        await db.SaveChangesAsync();
+        return NoContent();
     }
 
     [Authorize]

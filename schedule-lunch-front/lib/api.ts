@@ -21,13 +21,18 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       }),
-    register: (username: string, email: string, password: string) =>
+    register: (username: string, email: string, password: string, firstName: string, lastName: string) =>
       request<{ userId: string; username: string; token: string }>('/sch-lunch-api/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username, email, password, firstName, lastName }),
       }),
     me: (token: string) =>
       request<import('./types').MeResponse>('/sch-lunch-api/auth/me', {}, token),
+    updateProfile: (firstName: string, lastName: string, token: string) =>
+      request<void>('/sch-lunch-api/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({ firstName, lastName }),
+      }, token),
   },
   schedule: {
     getWeek: (token: string) =>
