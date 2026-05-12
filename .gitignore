@@ -350,5 +350,8 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+# env files (can opt-in for committing if needed)
+.env*
+
 # Others
 .claude

@@ -32,6 +32,71 @@ ScheduleLunch/
 - Node.js 20+
 - PostgreSQL 17+
 
+## Docker Compose (Recommended)
+
+The easiest way to run the full stack locally. Requires only Docker and Docker Compose.
+
+### Services
+
+| Service    | URL                            | Description                          |
+| ---------- | ------------------------------ | ------------------------------------ |
+| `frontend` | http://localhost:3000          | Next.js app                          |
+| `backend`  | http://localhost:5133          | ASP.NET Core API — Swagger at `/swagger` |
+| `db`       | localhost:5432                 | PostgreSQL 17 (internal only)        |
+
+### Quick Start
+
+```bash
+# Clone and start everything
+docker compose up --build
+
+# Run in the background
+docker compose up --build -d
+```
+
+The backend applies EF Core migrations automatically on startup. Once ready, open http://localhost:3000 and follow the [first-time setup](#first-time-admin-setup).
+
+### Environment Variables
+
+`docker compose` reads a `.env` file at the project root. This file is gitignored — never commit it. It must contain **four variables**: two for Docker Compose (infrastructure) and two for the frontend (Next.js build):
+
+```env
+# --- Docker Compose ---
+# PostgreSQL superuser password
+POSTGRES_PASSWORD=your-strong-password
+
+# JWT signing key used by the backend (min 32 chars recommended)
+JWT_KEY=your-very-long-random-secret-key
+
+# --- Next.js frontend ---
+# Backend URL accessible from the browser (must match NGINX/exposed port)
+NEXT_PUBLIC_API_URL=http://localhost
+
+# Same value as JWT_KEY — used by the frontend to verify tokens server-side
+JWT_SECRET=your-very-long-random-secret-key
+```
+
+> **Common mistake:** if `POSTGRES_PASSWORD` or `JWT_KEY` are missing, the db container fails to start with _"superuser password is not specified"_. All four variables are required.
+
+### Useful Commands
+
+```bash
+docker compose up -d            # Start in the background
+docker compose down             # Stop all services
+docker compose down -v          # Stop and delete the database volume
+docker compose logs -f backend  # Stream backend logs
+docker compose logs -f frontend # Stream frontend logs
+docker compose ps               # Check service status
+```
+
+### Rebuilding After Code Changes
+
+```bash
+docker compose up --build       # Rebuild images and restart
+```
+
+---
+
 ## Setup
 
 ### Backend

@@ -64,9 +64,12 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 
 builder.Services.AddSignalR();
 
+var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
+    ?? ["http://localhost:3000"];
+
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()));
