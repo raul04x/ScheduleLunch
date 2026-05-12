@@ -81,12 +81,12 @@ export function BottomTabBar({ isAdmin = false }: Props) {
             )}
 
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-[var(--color-text-muted)]">Idioma</span>
+              <span className="text-sm text-[var(--color-text-muted)]">{t.settingLanguage}</span>
               <LanguageSwitcher />
             </div>
 
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-[var(--color-text-muted)]">Tema</span>
+              <span className="text-sm text-[var(--color-text-muted)]">{t.settingTheme}</span>
               <ThemeToggle />
             </div>
 

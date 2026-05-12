@@ -7,7 +7,7 @@ namespace SL.Api.Controllers;
 
 [ApiController]
 [Route("sch-lunch-api/admin")]
-[Authorize(Roles = "SuperAdmin")]
+[Authorize(Roles = "SuperAdmin,GroupAdmin")]
 public class AdminController(IAdminService adminService) : ControllerBase
 {
     [HttpGet("users")]
@@ -18,7 +18,7 @@ public class AdminController(IAdminService adminService) : ControllerBase
     public async Task<IActionResult> UpdateRole(Guid userId, UpdateUserRoleDto dto)
     {
         await adminService.UpdateUserRoleAsync(userId, dto.Role);
-        return Ok();
+        return NoContent();
     }
 
     [HttpPatch("users/{userId}/group")]

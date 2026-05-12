@@ -10,11 +10,12 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { PasswordStrength } from '@/components/ui/PasswordStrength';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  const [form, setForm] = useState({ username: '', email: '', password: '' });
+  const [form, setForm] = useState({ username: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -23,17 +24,21 @@ export default function RegisterPage() {
       setForm(f => ({ ...f, [field]: e.target.value }));
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    if (form.password !== form.confirm) {
+      setError(t.passwordMismatch);
+      return;
+    }
     setLoading(true);
     try {
       const res = await api.auth.register(form.username, form.email, form.password);
       document.cookie = `sl_token=${res.token}; path=/; SameSite=Strict`;
       localStorage.setItem('sl_token', res.token);
       router.push('/pending');
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t.registerError);
+    } catch {
+      setError(t.registerError);
     } finally {
       setLoading(false);
     }
@@ -48,7 +53,7 @@ export default function RegisterPage() {
       >
         <AppLogo size={64} withWordmark={false} />
         <h1 className="mt-6 text-2xl font-bold text-white">ScheduleLunch</h1>
-        <p className="mt-2 text-sm" style={{ color: '#F0A825' }}>Reserve your table</p>
+        <p className="mt-2 text-sm" style={{ color: '#F0A825' }}>{t.tagline}</p>
       </div>
 
       {/* Right panel */}
@@ -90,6 +95,14 @@ export default function RegisterPage() {
                 placeholder={t.passwordPlaceholder}
                 value={form.password}
                 onChange={set('password')}
+                required
+              />
+              <PasswordStrength password={form.password} />
+              <Input
+                type="password"
+                placeholder={t.passwordConfirmPlaceholder}
+                value={form.confirm}
+                onChange={set('confirm')}
                 required
               />
               {error && <p className="text-sm text-red-500">{error}</p>}

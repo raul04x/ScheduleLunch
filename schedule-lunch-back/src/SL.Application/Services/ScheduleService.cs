@@ -9,8 +9,9 @@ public class ScheduleService(ITimeSlotRepository slotRepo, IAttendanceRepository
 {
     public async Task<IEnumerable<TimeSlotDto>> GetWeekSlotsAsync(Guid groupId, Guid currentUserId)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var monday = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var dow = (int)today.DayOfWeek;
+        var monday = today.AddDays(dow == 0 ? -6 : -(dow - 1));
         var friday = monday.AddDays(4);
 
         var slots = await slotRepo.GetByGroupAndRangeAsync(groupId, monday, friday);

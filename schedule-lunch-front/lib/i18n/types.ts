@@ -55,6 +55,13 @@ export interface Translations {
   pendingTitle: string;
   pendingMessage: string;
 
+  // Common
+  tagline: string;
+  settingLanguage: string;
+  settingTheme: string;
+  switchToLight: string;
+  switchToDark: string;
+
   // Schedule
   currentWeek: string;
   errorLoadingSlots: string;
@@ -63,6 +70,10 @@ export interface Translations {
   noSlotsThisWeek: string;
   noRecentActivity: string;
   recentActivity: string;
+  today: string;
+  slotReserved: string;
+  slotFull: string;
+  slotAvailable: string;
   days: [string, string, string, string, string];
 
   // Mobile navigation
@@ -90,6 +101,7 @@ export interface Translations {
   roleCol: string;
   groupCol: string;
   noGroup: string;
+  statusPending: string;
 
   // Admin — groups members
   membersSection: string;
@@ -107,6 +119,7 @@ export interface Translations {
   createSlot: string;
   deleteAction: string;
   reservationsLabel: string;
+  capacityAbbr: string;
 
   // Admin — groups
   groupsTitle: string;
@@ -114,4 +127,15 @@ export interface Translations {
   groupNameFieldPlaceholder: string;
   groupDescFieldPlaceholder: string;
   createGroup: string;
+
+  // Password strength
+  passwordStrengthWeak: string;
+  passwordStrengthFair: string;
+  passwordStrengthGood: string;
+  passwordStrengthStrong: string;
+  passwordReqLength: string;
+  passwordReqUppercase: string;
+  passwordReqLowercase: string;
+  passwordReqNumber: string;
+  passwordReqSpecial: string;
 }

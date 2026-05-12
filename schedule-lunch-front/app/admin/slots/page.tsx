@@ -68,7 +68,7 @@ export default function AdminSlotsPage() {
               <div className="text-sm">
                 <span className="text-[var(--color-text)] font-medium">{s.label}</span>
                 <span className="text-[var(--color-text-muted)] ml-2">{s.date}</span>
-                <span className="text-[var(--color-text-muted)] ml-2">cap. {s.capacity}</span>
+                <span className="text-[var(--color-text-muted)] ml-2">{t.capacityAbbr} {s.capacity}</span>
                 <span className="text-[var(--color-text-muted)] ml-2">{s.attendeeCount} {t.reservationsLabel}</span>
               </div>
               <Button variant="danger" size="sm" onClick={() => remove(s.id)}>{t.deleteAction}</Button>

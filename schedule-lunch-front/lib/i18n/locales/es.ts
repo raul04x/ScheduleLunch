@@ -12,6 +12,13 @@ export const es: Translations = {
   navGroups: 'Grupos',
   navSlots: 'Slots',
 
+  // Common
+  tagline: 'Reserva tu mesa',
+  settingLanguage: 'Idioma',
+  settingTheme: 'Tema',
+  switchToLight: 'Cambiar a modo claro',
+  switchToDark: 'Cambiar a modo oscuro',
+
   // Login
   loginTitle: 'Iniciar sesión',
   loginSubtitle: 'ScheduleLunch',
@@ -63,6 +70,10 @@ export const es: Translations = {
   noSlotsThisWeek: 'No hay slots esta semana.',
   noRecentActivity: 'Sin actividad reciente.',
   recentActivity: 'Actividad reciente',
+  today: 'Hoy',
+  slotReserved: 'Reservado',
+  slotFull: 'Lleno',
+  slotAvailable: 'Disponible',
   days: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
 
   // Mobile navigation
@@ -94,6 +105,7 @@ export const es: Translations = {
   roleCol: 'Rol',
   groupCol: 'Grupo',
   noGroup: 'Sin grupo',
+  statusPending: 'Pendiente',
 
   // Admin — groups members
   membersSection: 'Miembros',
@@ -111,6 +123,7 @@ export const es: Translations = {
   createSlot: 'Crear slot',
   deleteAction: 'Eliminar',
   reservationsLabel: 'reservas',
+  capacityAbbr: 'cap.',
 
   // Admin — groups
   groupsTitle: 'Grupos',
@@ -118,4 +131,15 @@ export const es: Translations = {
   groupNameFieldPlaceholder: 'Nombre',
   groupDescFieldPlaceholder: 'Descripción (opcional)',
   createGroup: 'Crear grupo',
+
+  // Password strength
+  passwordStrengthWeak: 'Débil',
+  passwordStrengthFair: 'Regular',
+  passwordStrengthGood: 'Buena',
+  passwordStrengthStrong: 'Fuerte',
+  passwordReqLength: 'Mínimo 8 caracteres',
+  passwordReqUppercase: 'Una mayúscula',
+  passwordReqLowercase: 'Una minúscula',
+  passwordReqNumber: 'Un número',
+  passwordReqSpecial: 'Un carácter especial',
 };

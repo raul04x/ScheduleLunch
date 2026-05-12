@@ -52,6 +52,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── Native date/time picker icons — dark theme ─────── */
+.dark input[type="date"],
+.dark input[type="time"] {
+  color-scheme: dark;
+}
+
 /* ── Pulse animation for pending page ───────────────── */
 @keyframes pulse-gold {
   0%, 100% { opacity: 1; }

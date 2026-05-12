@@ -12,6 +12,13 @@ export const en: Translations = {
   navGroups: 'Groups',
   navSlots: 'Slots',
 
+  // Common
+  tagline: 'Reserve your table',
+  settingLanguage: 'Language',
+  settingTheme: 'Theme',
+  switchToLight: 'Switch to light mode',
+  switchToDark: 'Switch to dark mode',
+
   // Login
   loginTitle: 'Sign in',
   loginSubtitle: 'ScheduleLunch',
@@ -63,6 +70,10 @@ export const en: Translations = {
   noSlotsThisWeek: 'No slots this week.',
   noRecentActivity: 'No recent activity.',
   recentActivity: 'Recent activity',
+  today: 'Today',
+  slotReserved: 'Reserved',
+  slotFull: 'Full',
+  slotAvailable: 'Available',
   days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
 
   // Mobile navigation
@@ -118,4 +129,15 @@ export const en: Translations = {
   groupNameFieldPlaceholder: 'Name',
   groupDescFieldPlaceholder: 'Description (optional)',
   createGroup: 'Create group',
+
+  // Password strength
+  passwordStrengthWeak: 'Weak',
+  passwordStrengthFair: 'Fair',
+  passwordStrengthGood: 'Good',
+  passwordStrengthStrong: 'Strong',
+  passwordReqLength: 'At least 8 characters',
+  passwordReqUppercase: 'One uppercase letter',
+  passwordReqLowercase: 'One lowercase letter',
+  passwordReqNumber: 'One number',
+  passwordReqSpecial: 'One special character',
 };

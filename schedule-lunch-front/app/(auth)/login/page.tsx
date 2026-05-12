@@ -34,8 +34,8 @@ export default function LoginPage() {
       } else {
         router.push(me.role === 'SuperAdmin' || me.role === 'GroupAdmin' ? '/admin/users' : '/schedule');
       }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t.loginError);
+    } catch {
+      setError(t.loginError);
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export default function LoginPage() {
       >
         <AppLogo size={64} withWordmark={false} />
         <h1 className="mt-6 text-2xl font-bold text-white">ScheduleLunch</h1>
-        <p className="mt-2 text-sm" style={{ color: '#F0A825' }}>Reserve your table</p>
+        <p className="mt-2 text-sm" style={{ color: '#F0A825' }}>{t.tagline}</p>
       </div>
 
       {/* Right panel */}

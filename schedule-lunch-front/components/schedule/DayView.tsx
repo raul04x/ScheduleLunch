@@ -63,7 +63,7 @@ export function DayView({ slots, onToggle, loadingSlotId }: Props) {
           </p>
           {currentDate === today && (
             <span className="text-[10px] text-[var(--color-brand)] font-bold uppercase tracking-wide">
-              Hoy
+              {t.today}
             </span>
           )}
         </div>
@@ -118,11 +118,11 @@ export function DayView({ slots, onToggle, loadingSlotId }: Props) {
                 </p>
                 <div className="mt-1.5">
                   {slot.isReservedByCurrentUser ? (
-                    <Badge variant="accent">Reservado</Badge>
+                    <Badge variant="accent">{t.slotReserved}</Badge>
                   ) : isFull ? (
-                    <Badge variant="muted">Lleno</Badge>
+                    <Badge variant="muted">{t.slotFull}</Badge>
                   ) : (
-                    <Badge variant="muted">Disponible</Badge>
+                    <Badge variant="muted">{t.slotAvailable}</Badge>
                   )}
                 </div>
               </div>

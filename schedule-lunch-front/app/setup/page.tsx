@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { PasswordStrength } from '@/components/ui/PasswordStrength';
 
 export default function SetupPage() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function SetupPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (form.password !== form.confirm) {
@@ -50,8 +51,8 @@ export default function SetupPage() {
         groupDescription: form.groupDescription || undefined,
       });
       router.replace('/login');
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t.setupError);
+    } catch {
+      setError(t.setupError);
     } finally {
       setLoading(false);
     }
@@ -68,7 +69,7 @@ export default function SetupPage() {
       >
         <AppLogo size={64} withWordmark={false} />
         <h1 className="mt-6 text-2xl font-bold text-white">ScheduleLunch</h1>
-        <p className="mt-2 text-sm" style={{ color: '#F0A825' }}>Reserve your table</p>
+        <p className="mt-2 text-sm" style={{ color: '#F0A825' }}>{t.tagline}</p>
       </div>
 
       {/* Right panel */}
@@ -135,6 +136,7 @@ export default function SetupPage() {
                 required
                 autoComplete="new-password"
               />
+              <PasswordStrength password={form.password} />
               <Input
                 name="confirm"
                 type="password"

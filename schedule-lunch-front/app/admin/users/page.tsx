@@ -128,7 +128,7 @@ export default function AdminUsersPage() {
                         <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{groupName(u.groupId)}</p>
                       </div>
                     </div>
-                    <Badge variant="gold">Pendiente</Badge>
+                    <Badge variant="gold">{t.statusPending}</Badge>
                   </div>
                   <div className="flex gap-2 mt-3">
                     <Button variant="primary" size="sm" className="flex-1" onClick={() => approveMember(u)}>
